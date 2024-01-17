@@ -436,3 +436,77 @@ NSString* getBootSession()
     
     return @(uuid);
 }
+
+// Credit to wh1te4ever - https://github.com/wh1te4ever/kfund/blob/972651c0b4c81098b844b29d17741cb445772c74/kfd/fun/vnode.m#L217
+
+bool enable_sbInjection(int method) {
+    
+    int fd;
+    int fd2;
+    const char *xpc_origlocation = "/usr/libexec/xpcproxy";
+    const char *xpc_new_location = "/var/mobile/xpcproxy"; // TODO: Make this modified xpc, include it in this project, move it to this location
+    
+    if(method == 2) {
+        goto xpc;
+    }
+    
+    SYSLOG("[SB Injection] executing launchd patch");
+    
+    const char* lcd_origlocation = "/sbin/launchd";
+    fd = open(lcd_origlocation, O_RDONLY);
+    if(fd == -1) {
+        SYSLOG("Unable to open launchd!");
+        return false;
+    }
+    
+    SYSLOG("fd returned: %d", fd);
+    
+    // modify namecache - TODO
+    
+    
+    
+    close(fd);
+    
+    return true;
+    
+    
+xpc:;
+    
+    SYSLOG("[SB Injection] executing xpcproxy patch");
+    
+    fd = open(xpc_origlocation, O_RDONLY);
+    if(fd == -1) {
+        SYSLOG("ERR: Unable to open xpcproxy");
+        return false;
+    }
+    SYSLOG("fd returned: %d", fd);
+    
+    off_t xpcfile_size = lseek(fd, 0, SEEK_END);
+    SYSLOG("xpcfile_size: %llx", xpcfile_size);
+    if(xpcfile_size <= 0 ) { return false; }
+    
+    /* Ensure fake xpcproxy exists before continuing */
+    if(![[NSFileManager defaultManager] fileExistsAtPath:@"/var/mobile/xpcproxy"]) {
+        SYSLOG("ERR: Fake xpcproxy is not in the right location");
+        return false;
+    }
+    fd2 = open(xpc_new_location, O_RDONLY);
+    if(fd2 == -1) {
+        SYSLOG("ERR: Unable to open fake xpcproxy");
+        return false;
+    }
+    SYSLOG("fd2 returned: %d", fd2);
+    off_t xpcfake_size = lseek(fd2, 0, SEEK_END);
+    SYSLOG("xpcfile_size: %llx", xpcfile_size);
+    if(xpcfake_size <= 0 ) { return false; }
+    
+    // swap vnodes - TODO
+    
+    
+    
+    
+    close(fd);
+    close(fd2);
+    
+    return true;
+}

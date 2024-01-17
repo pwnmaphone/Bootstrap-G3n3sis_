@@ -10,6 +10,11 @@
 #import <sys/sysctl.h>
 #include <sys/utsname.h>
 
+#include "libkfd.h"
+#include "include/include.h"
+#include "include/MemHogging/memoryHog.h"
+#include "include/kernelpatchfinder/patchfinder.h"
+
 #include <Security/SecKey.h>
 #include <Security/Security.h>
 typedef struct CF_BRIDGED_TYPE(id) __SecCode const* SecStaticCodeRef; /* code on disk */
@@ -346,6 +351,57 @@ BOOL opensshAction(BOOL enable)
 
 void bootstrapAction()
 {
+    dispatch_async(dispatch_get_global_queue(0, 0), ^{
+        
+        
+        //  [AppDelegate addLogText:[NSString stringWithFormat:@"openssh launch faild(%d):\n%@\n%@", status, log, err]];
+        uint64_t kfd = 0;
+        
+           [AppDelegate addLogText:Localized(@"\n\n **** Starting Bootstrap Process ****\n\n")];
+           SYSLOG("\n\n\n **** Starting Bootstrap Process ****\n\n\n");
+           
+           uint64_t* mem = Hog_memory();
+           if(mem == -1) {
+               SYSLOG("[warning]: Memory hogging failed, but will try kfd anyway");
+               [AppDelegate addLogText:Localized(@"[warning]: Memory hogging failed, but will try kfd anyway")];
+           } else {
+               [AppDelegate addLogText:Localized(@"[Bootstrap]: HogMemory ran successfully")];
+           }
+        
+        int kfd_pages = (hogged_memory == true ? 3079:2048);
+
+           // Oobviously this is just for testing
+        [AppDelegate addLogText:[NSString stringWithFormat:@"[Bootstrap]: Running kfd with pages: %d", kfd_pages]];
+        sleep(3);
+           kfd = kopen(kfd_pages, puaf_landa, kread_sem_open, kwrite_sem_open);
+           if (!ADDRISVALID(kfd) || kfd == 0) {
+               [AppDelegate showMesage:Localized(@"The KFD exploit failed. Please reboot and try again.") title:Localized(@"Error")];
+               [AppDelegate addLogText:Localized(@"[Bootstrap]: ERR: kfd exploit failed")];
+               return;
+           }
+           
+           SYSLOG("kfd: %llx", kfd);
+           [AppDelegate addLogText:Localized(@"[Bootstrap]: KFD ran succesfully")];
+           [AppDelegate showMesage:Localized(@"Patchfinder & KFD ran succesfully, we're cooking fr fr.") title:Localized(@"Complete")];
+           
+           free_memory(mem);
+           
+           [AppDelegate addLogText:Localized(@"[Bootstrap]: Freed hogged memory")];
+           
+           return;
+           
+       });
+
+      /*
+       _offsets_init(); // initiate offsets
+       bool replaced = enable_sbInjection(1); // initiate SpringBoard Injection
+       if(replaced == false) {
+           [AppDelegate showMesage:Localized(@"Bootstrap was unable to setup SpringBoard injection. Please reboot and try again.") title:Localized(@"Error")];
+           [AppDelegate addLogText:Localized(@"ERR: SpringBoard injection setup failed")];
+           return;
+       }
+        */
+    /*
     if(isSystemBootstrapped())
     {
         ASSERT(checkBootstrapVersion()==false);
@@ -437,6 +493,7 @@ void bootstrapAction()
         if(status!=0) [AppDelegate showMesage:[NSString stringWithFormat:@"%@\n\nstderr:\n%@",log,err] title:[NSString stringWithFormat:@"code(%d)",status]];
 
     });
+     */
 }
 
 

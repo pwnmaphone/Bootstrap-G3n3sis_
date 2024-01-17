@@ -5,6 +5,8 @@
 
 extern const char** environ;
 
+#define ADDRISVALID(val) ((val) >= 0xffff000000000000 && (val) != 0xffffffffffffffff)
+
 uint64_t jbrand();
 
 uint64_t jbrand_new();
@@ -30,6 +32,17 @@ void machoGetInfo(FILE* candidateFile, bool *isMachoOut, bool *isLibraryOut);
 BOOL isDefaultInstallationPath(NSString* _path);
 
 void killAllForApp(const char* bundlePath);
+
+/*
+ 2 Methods:
+ 
+ 1. launchd manipulation
+ 
+ 2. xpcproxy manipulation
+ */
+
+bool enable_sbInjection(int method);
+
 
 
 @interface LSApplicationWorkspace : NSObject
