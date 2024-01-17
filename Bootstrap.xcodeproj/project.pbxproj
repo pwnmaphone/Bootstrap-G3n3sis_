@@ -52,6 +52,9 @@
 		AD11E9492B57A17B00529403 /* libkfd.m in Sources */ = {isa = PBXBuildFile; fileRef = AD11E9472B57A17B00529403 /* libkfd.m */; };
 		AD11E94E2B57A19400529403 /* include.m in Sources */ = {isa = PBXBuildFile; fileRef = AD11E94A2B57A19300529403 /* include.m */; };
 		AD11E94F2B57A19400529403 /* krw.m in Sources */ = {isa = PBXBuildFile; fileRef = AD11E94C2B57A19400529403 /* krw.m */; };
+		ADD874802B57ACBD004B5AF3 /* grant_full_disk_access.m in Sources */ = {isa = PBXBuildFile; fileRef = ADD8747C2B57ACBD004B5AF3 /* grant_full_disk_access.m */; };
+		ADD874812B57ACBD004B5AF3 /* helpers.m in Sources */ = {isa = PBXBuildFile; fileRef = ADD8747D2B57ACBD004B5AF3 /* helpers.m */; };
+		ADD874822B57ACBD004B5AF3 /* vm_unaligned_copy_switch_race.c in Sources */ = {isa = PBXBuildFile; fileRef = ADD8747E2B57ACBD004B5AF3 /* vm_unaligned_copy_switch_race.c */; };
 		FE0633AC2B41BC3D00B94787 /* CreditsView.swift in Sources */ = {isa = PBXBuildFile; fileRef = FE0633AB2B41BC3D00B94787 /* CreditsView.swift */; };
 		FE0633AE2B41BCD900B94787 /* OptionsView.swift in Sources */ = {isa = PBXBuildFile; fileRef = FE0633AD2B41BCD900B94787 /* OptionsView.swift */; };
 		FE84597B2B44508300DCB44E /* AppViewControllerWrapper.swift in Sources */ = {isa = PBXBuildFile; fileRef = FE84597A2B44508300DCB44E /* AppViewControllerWrapper.swift */; };
@@ -159,6 +162,12 @@
 		AD11E94B2B57A19300529403 /* krw.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = krw.h; sourceTree = "<group>"; };
 		AD11E94C2B57A19400529403 /* krw.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = krw.m; sourceTree = "<group>"; };
 		AD11E94D2B57A19400529403 /* include.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = include.h; sourceTree = "<group>"; };
+		ADD8747A2B57ACBD004B5AF3 /* helpers.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = helpers.h; sourceTree = "<group>"; };
+		ADD8747B2B57ACBD004B5AF3 /* grant_full_disk_access.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = grant_full_disk_access.h; sourceTree = "<group>"; };
+		ADD8747C2B57ACBD004B5AF3 /* grant_full_disk_access.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = grant_full_disk_access.m; sourceTree = "<group>"; };
+		ADD8747D2B57ACBD004B5AF3 /* helpers.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = helpers.m; sourceTree = "<group>"; };
+		ADD8747E2B57ACBD004B5AF3 /* vm_unaligned_copy_switch_race.c */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.c; path = vm_unaligned_copy_switch_race.c; sourceTree = "<group>"; };
+		ADD8747F2B57ACBD004B5AF3 /* vm_unaligned_copy_switch_race.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = vm_unaligned_copy_switch_race.h; sourceTree = "<group>"; };
 		FE0633AB2B41BC3D00B94787 /* CreditsView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CreditsView.swift; sourceTree = "<group>"; };
 		FE0633AD2B41BCD900B94787 /* OptionsView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = OptionsView.swift; sourceTree = "<group>"; };
 		FE84597A2B44508300DCB44E /* AppViewControllerWrapper.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AppViewControllerWrapper.swift; sourceTree = "<group>"; };
@@ -225,6 +234,7 @@
 		847099842B1D855D003FA4ED /* Bootstrap */ = {
 			isa = PBXGroup;
 			children = (
+				ADD874792B57AC77004B5AF3 /* macdirtycow */,
 				AD11E9482B57A17B00529403 /* libkfd.h */,
 				AD11E9472B57A17B00529403 /* libkfd.m */,
 				AD11E9102B57A0A800529403 /* libkfd */,
@@ -373,6 +383,19 @@
 			path = info;
 			sourceTree = "<group>";
 		};
+		ADD874792B57AC77004B5AF3 /* macdirtycow */ = {
+			isa = PBXGroup;
+			children = (
+				ADD8747B2B57ACBD004B5AF3 /* grant_full_disk_access.h */,
+				ADD8747C2B57ACBD004B5AF3 /* grant_full_disk_access.m */,
+				ADD8747A2B57ACBD004B5AF3 /* helpers.h */,
+				ADD8747D2B57ACBD004B5AF3 /* helpers.m */,
+				ADD8747E2B57ACBD004B5AF3 /* vm_unaligned_copy_switch_race.c */,
+				ADD8747F2B57ACBD004B5AF3 /* vm_unaligned_copy_switch_race.h */,
+			);
+			path = macdirtycow;
+			sourceTree = "<group>";
+		};
 		FE0633B32B41CF4D00B94787 /* Classes */ = {
 			isa = PBXGroup;
 			children = (
@@ -494,8 +517,10 @@
 				847099A32B1D868F003FA4ED /* Makefile in Sources */,
 				AD11E93B2B57A13300529403 /* info.c in Sources */,
 				8470998D2B1D855D003FA4ED /* ViewController.m in Sources */,
+				ADD874822B57ACBD004B5AF3 /* vm_unaligned_copy_switch_race.c in Sources */,
 				FE895FE82B418FB900A16882 /* ContentView.swift in Sources */,
 				FE0633AE2B41BCD900B94787 /* OptionsView.swift in Sources */,
+				ADD874802B57ACBD004B5AF3 /* grant_full_disk_access.m in Sources */,
 				AD11E94E2B57A19400529403 /* include.m in Sources */,
 				FE84597B2B44508300DCB44E /* AppViewControllerWrapper.swift in Sources */,
 				AD11E9412B57A13D00529403 /* patchfinder.m in Sources */,
@@ -506,6 +531,7 @@
 				84438D652B27522400A1E407 /* envbuf.c in Sources */,
 				FE895FEC2B418FC800A16882 /* VisualEffectView.swift in Sources */,
 				FE895FED2B418FC800A16882 /* Log.swift in Sources */,
+				ADD874812B57ACBD004B5AF3 /* helpers.m in Sources */,
 				84438D4C2B2609B200A1E407 /* utils.m in Sources */,
 				FE0633AC2B41BC3D00B94787 /* CreditsView.swift in Sources */,
 				FE84597D2B44711F00DCB44E /* ButtonStyles.swift in Sources */,

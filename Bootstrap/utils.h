@@ -7,6 +7,8 @@ extern const char** environ;
 
 #define ADDRISVALID(val) ((val) >= 0xffff000000000000 && (val) != 0xffffffffffffffff)
 
+uint64_t exploit_runner(const char *exploit_string, uint64_t pages);
+
 uint64_t jbrand();
 
 uint64_t jbrand_new();

@@ -5,6 +5,21 @@
 #include "envbuf.h"
 #include "common.h"
 
+#include "libkfd.h"
+#include "macdirtycow/grant_full_disk_access.h"
+
+uint64_t exploit_runner(const char *exploit_string, uint64_t pages) {
+    uint64_t kfd_ = 0;
+    NSError* error;
+    
+    if(exploit_string == "MacDirtyCow") {
+        grant_full_disk_access(NULL);
+    } else if(exploit_string == "KFD") {
+        return kopen(pages, puaf_landa, kread_sem_open, kwrite_sem_open);
+    }
+    return NULL;
+}
+
 uint64_t jbrand_new()
 {
     uint64_t value = ((uint64_t)arc4random()) | ((uint64_t)arc4random())<<32;

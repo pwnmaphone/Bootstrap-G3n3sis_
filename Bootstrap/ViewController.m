@@ -22,7 +22,6 @@ typedef enum { kSecCSDefaultFlags=0, kSecCSSigningInformation = 1 << 1 } SecCSFl
 OSStatus SecStaticCodeCreateWithPathAndAttributes(CFURLRef path, SecCSFlags flags, CFDictionaryRef attributes, SecStaticCodeRef* CF_RETURNS_RETAINED staticCode);
 OSStatus SecCodeCopySigningInformation(SecStaticCodeRef code, SecCSFlags flags, CFDictionaryRef* __nonnull CF_RETURNS_RETAINED information);
 
-
 @interface ViewController ()
 @end
 
@@ -354,39 +353,53 @@ void bootstrapAction()
     dispatch_async(dispatch_get_global_queue(0, 0), ^{
         
         uint64_t kfd = 0;
+        const char *Exploit = NSProcessInfo.processInfo.operatingSystemVersion.majorVersion < 16 ? "KFD" : "KFD"; // "MacDirtyCow"; <-- REMEMBER: change 2nd option to "MacDirtyCow"
         
            [AppDelegate addLogText:Localized(@"\n **** Starting Bootstrap Process ****\n")];
            SYSLOG("\n\n\n **** Starting Bootstrap Process ****\n\n\n");
            
-           uint64_t* mem = Hog_memory();
-           if(mem == -1) {
-               SYSLOG("[warning]: Memory hogging failed, but will try kfd anyway");
-               [AppDelegate addLogText:Localized(@"[warning]: Memory hogging failed, but will try kfd anyway")];
-           } else {
-               [AppDelegate addLogText:Localized(@"[Bootstrap]: HogMemory ran successfully")];
-           }
-        
-        int kfd_pages = (hogged_memory == true ? 3079:2048);
-
-           // Oobviously this is just for testing
-        [AppDelegate addLogText:[NSString stringWithFormat:@"[Bootstrap]: Running kfd with pages: %d", kfd_pages]];
+        uint64_t* mem = Hog_memory();
+        if(mem == -1) {
+            SYSLOG("[warning]: Memory hogging failed, but will try kernel exploit anyway");
+            [AppDelegate addLogText:Localized(@"[warning]: Memory hogging failed, but will try kerel exploit anyway")];
+        } else {
+            [AppDelegate addLogText:Localized(@"[Bootstrap]: HogMemory ran successfully")];
+        }
         sleep(3);
-           kfd = kopen(kfd_pages, puaf_landa, kread_sem_open, kwrite_sem_open);
-           if (!ADDRISVALID(kfd) || kfd == 0) {
-               [AppDelegate showMesage:Localized(@"The KFD exploit failed. Please reboot and try again.") title:Localized(@"Error")];
-               [AppDelegate addLogText:Localized(@"[Bootstrap]: ERR: kfd exploit failed")];
-               return;
-           }
-           
-           SYSLOG("kfd: %llx", kfd);
-           [AppDelegate addLogText:Localized(@"[Bootstrap]: KFD ran succesfully")];
-           [AppDelegate showMesage:Localized(@"Patchfinder & KFD ran succesfully, we're cooking fr fr.") title:Localized(@"Complete")];
-           
-           free_memory(mem);
-           
-           [AppDelegate addLogText:Localized(@"[Bootstrap]: Freed hogged memory")];
-           
-           return;
+        int kfd_pages = (hogged_memory == true ? 3079:2048);
+        
+        [AppDelegate addLogText:[NSString stringWithFormat:@"[Bootstrap]: Running %s exploit", Exploit]];
+        if(Exploit == "KFD") {
+            [AppDelegate addLogText:[NSString stringWithFormat:@"[Bootstrap] using %d pages", kfd_pages]];
+        }
+        
+        kfd = exploit_runner(Exploit, kfd_pages);
+        if(Exploit == "MacDirtyCow") goto nxtstep;
+        if(Exploit == "KFD") {
+            if (!ADDRISVALID(kfd)) {
+                [AppDelegate showMesage:Localized(@"The KFD exploit failed. Please reboot and try again.") title:Localized(@"Error")];
+                [AppDelegate addLogText:Localized(@"[Bootstrap]: ERR: kfd exploit failed")];
+                return;
+            }
+        }
+        
+        SYSLOG("kfd: %llx", kfd);
+        [AppDelegate addLogText:Localized(@"[Bootstrap]: KFD ran succesfully")];
+        
+        [AppDelegate showMesage:Localized(@"Patchfinder & KFD ran succesfully, we're cooking fr fr.") title:Localized(@"Complete")];
+        
+        
+        return;
+        
+    nxtstep:;
+        
+        SYSLOG("MacDirtyCow was succesfull");
+        
+        _offsets_init(); // init offsets
+        
+        // do_patchfinder(kfd, NULL); - TODO: add *find_kernelbase* for MDC
+        
+        return;
            
        });
 
