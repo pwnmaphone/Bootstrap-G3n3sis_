@@ -4,6 +4,16 @@
 
 A full featured bootstrap for ios14.0-17.0, A8-A17,M1+M2. (currently tested on ios15.0~ios17.0)
 
+# Note!
+Bootstrap-G3n3sis_ is independent of Bootstrap (besides being updated to latest Bootstrap versions), please do not antagonize RootHideDev regarding this fork.
+
+Bootstrap G3n3sis *will* include:
+- Springboard Injection (in progress)
+- Possible SafeMode (in progress)
+- Support for all A12+ + iOS 15+ devices (in progress)
+
+~ iOS 17 is obviously not supported (for now).
+
 ## Building
 
 You'll need MacOS to build, as you require Xcode Command Line Tools. If you don't have Xcode installed, you can install the Command Line Tools by itself by running `xcode-select --install`.
