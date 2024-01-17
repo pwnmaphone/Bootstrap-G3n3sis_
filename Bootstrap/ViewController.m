@@ -353,11 +353,9 @@ void bootstrapAction()
 {
     dispatch_async(dispatch_get_global_queue(0, 0), ^{
         
-        
-        //  [AppDelegate addLogText:[NSString stringWithFormat:@"openssh launch faild(%d):\n%@\n%@", status, log, err]];
         uint64_t kfd = 0;
         
-           [AppDelegate addLogText:Localized(@"\n\n **** Starting Bootstrap Process ****\n\n")];
+           [AppDelegate addLogText:Localized(@"\n **** Starting Bootstrap Process ****\n")];
            SYSLOG("\n\n\n **** Starting Bootstrap Process ****\n\n\n");
            
            uint64_t* mem = Hog_memory();
