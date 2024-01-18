@@ -7,6 +7,42 @@
 
 #include "../common.h"
 
+struct proc {
+    uint64_t p_list_le_next;
+    uint64_t p_list_le_prev;
+    uint64_t task;
+    uint64_t p_pid;
+    uint64_t p_fd_fd_ofiles;
+    uint64_t object_size;
+};
+
+const static struct proc proc_versions[] = {
+    { .p_list_le_next = 0x0, .p_list_le_prev = 0x8, .task = 0x10, .p_pid = 0x60, .p_fd_fd_ofiles = 0xf8, .object_size = 0x538 },
+    { .p_list_le_next = 0x0, .p_list_le_prev = 0x8, .task = 0x10, .p_pid = 0x60, .p_fd_fd_ofiles = 0xf8, .object_size = 0x730 },
+    { .p_list_le_next = 0x0, .p_list_le_prev = 0x8, .task = 0x10, .p_pid = 0x60, .p_fd_fd_ofiles = 0xf8, .object_size = 0x580 },
+    { .p_list_le_next = 0x0, .p_list_le_prev = 0x8, .task = 0x10, .p_pid = 0x60, .p_fd_fd_ofiles = 0xf8, .object_size = 0x778 },
+    
+    // Note: sizes below here are wrong idc
+    { .p_list_le_next = 0x0, .p_list_le_prev = 0x8, .task = 0x10, .p_pid = 0x68, .p_fd_fd_ofiles = 0x110, .object_size = 0x4B0 }, // iOS 15.0 - 15.1.1 arm64
+    { .p_list_le_next = 0x0, .p_list_le_prev = 0x8, .task = 0x10, .p_pid = 0x68, .p_fd_fd_ofiles = 0x100, .object_size = 0x4B0 }, // iOS 15.0 - 15.1.1 arm64e
+    
+    { .p_list_le_next = 0x0, .p_list_le_prev = 0x8, .task = 0x10, .p_pid = 0x68, .p_fd_fd_ofiles = 0xf8, .object_size = 0x4B0 }, // iOS 15.2 - 15.3.1 arm64
+    { .p_list_le_next = 0x0, .p_list_le_prev = 0x8, .task = 0x10, .p_pid = 0x68, .p_fd_fd_ofiles = 0xf8, .object_size = 0x4B0 }, // iOS 15.2 - 15.3.1 arm64e
+    
+    { .p_list_le_next = 0x0, .p_list_le_prev = 0x8, .task = 0x10, .p_pid = 0x68, .p_fd_fd_ofiles = 0xf8, .object_size = 0x4B0 }, // iOS 15.4 - 15.7.8 arm64
+    { .p_list_le_next = 0x0, .p_list_le_prev = 0x8, .task = 0x10, .p_pid = 0x68, .p_fd_fd_ofiles = 0xf8, .object_size = 0x4B0 }, // iOS 15.4 - 15.7.2 arm64e
+    
+    { .p_list_le_next = 0x0, .p_list_le_prev = 0x8, .task = 0x10, .p_pid = 0x68, .p_fd_fd_ofiles = 0xf8, .object_size = 0x4B0 }, // iOS 14.0 - 14.4
+    { .p_list_le_next = 0x0, .p_list_le_prev = 0x8, .task = 0x10, .p_pid = 0x68, .p_fd_fd_ofiles = 0xf8, .object_size = 0x4B0 }, // iOS 14.5 - 14.8.1
+};
+
+typedef uint64_t proc_p_list_le_next_t;
+typedef uint64_t proc_p_list_le_prev_t;
+typedef uint64_t proc_task_t;
+typedef int32_t proc_p_pid_t;
+typedef uint64_t proc_p_fd_fd_ofiles_t;
+
+
 struct IOSurface {
     uint64_t isa;
     uint64_t PixelFormat;

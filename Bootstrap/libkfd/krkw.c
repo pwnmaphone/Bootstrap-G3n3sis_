@@ -36,12 +36,13 @@ void krkw_init(struct kfd* kfd, uint64_t kread_method, uint64_t kwrite_method, c
             */
             switch (kread_method) {
                     kread_method_case(kread_kqueue_workloop_ctl)
-                    kread_method_case(kread_sem_open)
+                    kread_method_case(kread_sem_open);
+                    kread_method_case(kread_IOSurface);
             }
             
             switch (kwrite_method) {
-                    kwrite_method_case(kwrite_dup)
-                    kwrite_method_case(kwrite_sem_open)
+                    kwrite_method_case(kwrite_dup);
+                    kwrite_method_case(kwrite_sem_open);
                     kwrite_method_case(kwrite_IOSurface);
             }
     } else {
@@ -57,12 +58,13 @@ void krkw_init(struct kfd* kfd, uint64_t kread_method, uint64_t kwrite_method, c
         
         switch (kread_method) {
                 kread_method_case(kread_kqueue_workloop_ctl)
-                kread_method_case(kread_sem_open)
+                kread_method_case(kread_sem_open);
+                kread_method_case(kread_IOSurface);
         }
         
         switch (kwrite_method) {
-                kwrite_method_case(kwrite_dup)
-                kwrite_method_case(kwrite_sem_open)
+                kwrite_method_case(kwrite_dup);
+                kwrite_method_case(kwrite_sem_open);
                 kwrite_method_case(kwrite_IOSurface);
         }
     }

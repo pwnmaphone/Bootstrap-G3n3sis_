@@ -103,6 +103,8 @@
 #define SIGN(p)          ((p) & BIT(55))
 #define UNSIGN_PTR(p)    (SIGN(p) ? ((p) | PAC_MASK) : ((p) & ~PAC_MASK))
 
+#define unsign_kaddr(kaddr) ((kaddr) | (PAC_MASK))
+
 /*
  * osfmk/kern/kalloc.h
  */

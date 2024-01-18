@@ -12,7 +12,7 @@ uint64_t exploit_runner(const char *exploit_string, uint64_t pages) {
     if (strcmp(exploit_string, "KFD") == 0) {
         return kopen(pages, puaf_landa, kread_sem_open, kwrite_sem_open, exploit_string);
    } else {
-        return kopen(pages, puaf_landa, kread_sem_open, kwrite_IOSurface, exploit_string); // maybe smith will work better with the IOSurface ver.?
+        return kopen(pages, puaf_landa, kread_IOSurface, kwrite_IOSurface, exploit_string); // maybe smith will work better with the IOSurface ver.?
     }
 }
 

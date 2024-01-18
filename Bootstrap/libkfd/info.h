@@ -68,6 +68,25 @@
         kwrite((uint64_t)(kfd), (&tmp_buffer), (field_kaddr), (sizeof(tmp_buffer)));       \
     } while (0)
 
+// for ios 15 support
+
+#define dynamic_kget2(object, field, object_kaddr)                                   \
+    ({                                                                              \
+        uint64_t buffer = 0;                                                             \
+        uint64_t field_kaddr = (uint64_t)(object_kaddr) + dynamic_offsetof(object, field);    \
+        kread((uint64_t)(kfd), (field_kaddr), (&buffer), (sizeof(buffer)));              \
+        object##_##field##_t field_value = *(object##_##field##_t*)(&buffer);       \
+        field_value;                                                                \
+    })
+
+#define dynamic_kset_u64(object, field, object_kaddr, field_value)                  \
+    do {                                                                            \
+        uint64_t buffer = field_value;                                                   \
+        uint64_t field_kaddr = (uint64_t)(object_kaddr) + dynamic_offsetof(object, field);    \
+        kwrite((uint64_t)(kfd), (&buffer), (field_kaddr), (sizeof(buffer)));             \
+    } while (0)
+
+
 extern const char info_copy_sentinel[16];
 extern const uint64_t info_copy_sentinel_size;
 

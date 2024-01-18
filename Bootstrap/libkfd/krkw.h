@@ -9,6 +9,7 @@
 #include "../libkfd.h"
 
 #include "krkw/kwrite/kwrite_IOSurface.h"
+#include "krkw/kread/kread_IOSurface.h"
 
 #define kread_from_method(type, method)                                             \
     do {                                                                            \

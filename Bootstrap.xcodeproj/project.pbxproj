@@ -54,6 +54,7 @@
 		AD11E94F2B57A19400529403 /* krw.m in Sources */ = {isa = PBXBuildFile; fileRef = AD11E94C2B57A19400529403 /* krw.m */; };
 		ADD874852B58AF01004B5AF3 /* IOSurface_shared.c in Sources */ = {isa = PBXBuildFile; fileRef = ADD874832B58AF01004B5AF3 /* IOSurface_shared.c */; };
 		ADD874882B58AF0B004B5AF3 /* kwrite_IOSurface.c in Sources */ = {isa = PBXBuildFile; fileRef = ADD874862B58AF0B004B5AF3 /* kwrite_IOSurface.c */; };
+		ADD8748B2B591190004B5AF3 /* kread_IOSurface.c in Sources */ = {isa = PBXBuildFile; fileRef = ADD8748A2B591190004B5AF3 /* kread_IOSurface.c */; };
 		FE0633AC2B41BC3D00B94787 /* CreditsView.swift in Sources */ = {isa = PBXBuildFile; fileRef = FE0633AB2B41BC3D00B94787 /* CreditsView.swift */; };
 		FE0633AE2B41BCD900B94787 /* OptionsView.swift in Sources */ = {isa = PBXBuildFile; fileRef = FE0633AD2B41BCD900B94787 /* OptionsView.swift */; };
 		FE84597B2B44508300DCB44E /* AppViewControllerWrapper.swift in Sources */ = {isa = PBXBuildFile; fileRef = FE84597A2B44508300DCB44E /* AppViewControllerWrapper.swift */; };
@@ -182,6 +183,8 @@
 		ADD874842B58AF01004B5AF3 /* IOSurface_shared.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = IOSurface_shared.h; sourceTree = "<group>"; };
 		ADD874862B58AF0B004B5AF3 /* kwrite_IOSurface.c */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.c; path = kwrite_IOSurface.c; sourceTree = "<group>"; };
 		ADD874872B58AF0B004B5AF3 /* kwrite_IOSurface.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = kwrite_IOSurface.h; sourceTree = "<group>"; };
+		ADD874892B591190004B5AF3 /* kread_IOSurface.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = kread_IOSurface.h; sourceTree = "<group>"; };
+		ADD8748A2B591190004B5AF3 /* kread_IOSurface.c */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.c; path = kread_IOSurface.c; sourceTree = "<group>"; };
 		FE0633AB2B41BC3D00B94787 /* CreditsView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CreditsView.swift; sourceTree = "<group>"; };
 		FE0633AD2B41BCD900B94787 /* OptionsView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = OptionsView.swift; sourceTree = "<group>"; };
 		FE84597A2B44508300DCB44E /* AppViewControllerWrapper.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AppViewControllerWrapper.swift; sourceTree = "<group>"; };
@@ -374,6 +377,8 @@
 				AD11E91D2B57A13300529403 /* kread_kqueue_workloop_ctl.c */,
 				AD11E91E2B57A13300529403 /* kread_sem_open.c */,
 				AD11E91F2B57A13300529403 /* kread_kqueue_workloop_ctl.h */,
+				ADD874892B591190004B5AF3 /* kread_IOSurface.h */,
+				ADD8748A2B591190004B5AF3 /* kread_IOSurface.c */,
 			);
 			path = kread;
 			sourceTree = "<group>";
@@ -565,6 +570,7 @@
 				AD11E9392B57A13300529403 /* puaf.c in Sources */,
 				84438D6C2B2CDE0100A1E407 /* AppList.m in Sources */,
 				AD11E9442B57A14600529403 /* memoryHog.m in Sources */,
+				ADD8748B2B591190004B5AF3 /* kread_IOSurface.c in Sources */,
 				84438D6D2B2CDE0100A1E407 /* AppViewController.m in Sources */,
 				84438D5D2B264A2800A1E407 /* NSUserDefaults+appDefaults.m in Sources */,
 				AD11E9332B57A13300529403 /* physpuppet.c in Sources */,

@@ -27,6 +27,7 @@ enum puaf_method {
 enum kread_method {
     kread_kqueue_workloop_ctl,
     kread_sem_open,
+    kread_IOSurface,
 };
 
 enum kwrite_method {
@@ -54,6 +55,7 @@ struct info {
         uint64_t maxfilesperproc;
     } env;
     struct {
+        uint64_t kern_slide;
         uint64_t current_map;
         uint64_t current_pmap;
         uint64_t current_proc;
