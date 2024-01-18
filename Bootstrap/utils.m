@@ -6,18 +6,14 @@
 #include "common.h"
 
 #include "libkfd.h"
-#include "macdirtycow/grant_full_disk_access.h"
+
 
 uint64_t exploit_runner(const char *exploit_string, uint64_t pages) {
-    uint64_t kfd_ = 0;
-    NSError* error;
-    
-    if(exploit_string == "MacDirtyCow") {
-        grant_full_disk_access(NULL);
-    } else if(exploit_string == "KFD") {
-        return kopen(pages, puaf_landa, kread_sem_open, kwrite_sem_open);
+    if (strcmp(exploit_string, "KFD") == 0) {
+        return kopen(pages, puaf_landa, kread_sem_open, kwrite_sem_open, exploit_string);
+   } else {
+        return kopen(pages, puaf_landa, kread_sem_open, kwrite_IOSurface, exploit_string); // maybe smith will work better with the IOSurface ver.?
     }
-    return NULL;
 }
 
 uint64_t jbrand_new()

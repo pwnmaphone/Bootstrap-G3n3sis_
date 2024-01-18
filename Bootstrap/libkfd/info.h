@@ -15,6 +15,19 @@
  */
 #define dynamic_info(field_name)    (kern_versions[kfd->info.env.vid].field_name)
 
+#define dynamic_sizeof(object) (object##_versions[kfd->info.env.vid].object_size)
+
+#define dynamic_offsetof(object, field) (object##_versions[kfd->info.env.vid].field)
+
+
+#define dynamic_uget(object, field, object_uaddr)                                             \
+    ({                                                                                        \
+        uint64_t field_uaddr = (uint64_t)(object_uaddr) + dynamic_offsetof(object, field);    \
+        object##_##field##_t field_value = *(volatile object##_##field##_t*)(field_uaddr);    \
+        field_value;                                                                          \
+    })
+
+
 #define dynamic_kget(field_name, object_kaddr)                                    \
     ({                                                                            \
         uint64_t tmp_buffer = 0;                                                       \
@@ -31,6 +44,14 @@
         kwrite((uint64_t)(kfd), (&tmp_buffer), (field_kaddr), (sizeof(tmp_buffer)));    \
     } while (0)
 
+
+#define dynamic_uset(object, field, object_uaddr, field_value)                                   \
+    do {                                                                                         \
+        uint64_t field_uaddr = (uint64_t)(object_uaddr) + dynamic_offsetof(object, field);       \
+        *(volatile object##_##field##_t*)(field_uaddr) = (object##_##field##_t)(field_value);    \
+    } while (0)
+
+
 #define static_kget(object_name, field_name, object_kaddr)                            \
     ({                                                                                \
         uint64_t tmp_buffer = 0;                                                           \
@@ -38,6 +59,7 @@
         kread((uint64_t)(kfd), (field_kaddr), (&tmp_buffer), (sizeof(tmp_buffer)));        \
         tmp_buffer;                                                                   \
     })
+
 
 #define static_kset(object_name, field_name, new_value, object_kaddr)                 \
     do {                                                                              \

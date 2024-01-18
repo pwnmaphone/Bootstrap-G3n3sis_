@@ -8,12 +8,12 @@
 #include "libkfd.h"
 
 
-struct kfd* kfd_init(uint64_t puaf_pages, uint64_t puaf_method, uint64_t kread_method, uint64_t kwrite_method)
+struct kfd* kfd_init(uint64_t puaf_pages, uint64_t puaf_method, uint64_t kread_method, uint64_t kwrite_method, const char *IOSurface)
 {
     struct kfd* kfd = (struct kfd*)(malloc_bzero(sizeof(struct kfd)));
     info_init(kfd);
     puaf_init(kfd, puaf_pages, puaf_method);
-    krkw_init(kfd, kread_method, kwrite_method);
+    krkw_init(kfd, kread_method, kwrite_method, IOSurface);
     perf_init(kfd);
     return kfd;
 }
@@ -27,27 +27,29 @@ void kfd_free(struct kfd* kfd)
     bzero_free(kfd, sizeof(struct kfd));
 }
 
-uint64_t kopen(uint64_t puaf_pages, uint64_t puaf_method, uint64_t kread_method, uint64_t kwrite_method)
+uint64_t kopen(uint64_t puaf_pages, uint64_t puaf_method, uint64_t kread_method, uint64_t kwrite_method, const char *IOSurface)
 {
     timer_start();
-
+    
     const uint64_t puaf_pages_min = 16;
     const uint64_t puaf_pages_max = 4096;
     assert(puaf_pages >= puaf_pages_min);
     assert(puaf_pages <= puaf_pages_max);
-    assert(puaf_method <= puaf_landa);
-    assert(kread_method <= kread_sem_open);
-    assert(kwrite_method <= kwrite_sem_open);
-
-    struct kfd* kfd = kfd_init(puaf_pages, puaf_method, kread_method, kwrite_method);
-    puaf_run(kfd);
-    krkw_run(kfd);
-    info_run(kfd);
-    perf_run(kfd);
-    puaf_cleanup(kfd);
-
-    timer_end();
-    return (uint64_t)(kfd);
+    if(strcmp(IOSurface, "KFD") == 0) {
+        assert(puaf_method <= puaf_landa);
+        assert(kread_method <= kread_sem_open);
+        assert(kwrite_method <= kwrite_sem_open);
+    }
+    
+        struct kfd* kfd = kfd_init(puaf_pages, puaf_method, kread_method, kwrite_method, IOSurface);
+        puaf_run(kfd);
+        krkw_run(kfd);
+        info_run(kfd);
+        perf_run(kfd);
+        puaf_cleanup(kfd);
+        
+        timer_end();
+        return (uint64_t)(kfd);
 }
 
 void kread(uint64_t kfd, uint64_t kaddr, void* uaddr, uint64_t size)

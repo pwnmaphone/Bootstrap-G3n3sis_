@@ -353,9 +353,9 @@ void bootstrapAction()
     dispatch_async(dispatch_get_global_queue(0, 0), ^{
         
         uint64_t kfd = 0;
-        const char *Exploit = NSProcessInfo.processInfo.operatingSystemVersion.majorVersion < 16 ? "KFD" : "KFD"; // "MacDirtyCow"; <-- REMEMBER: change 2nd option to "MacDirtyCow"
+        const char *Exploit = NSProcessInfo.processInfo.operatingSystemVersion.majorVersion < 16 ? "KFDIO" : "KFD";
         
-           [AppDelegate addLogText:Localized(@"\n **** Starting Bootstrap Process ****\n")];
+           [AppDelegate addLogText:Localized(@"\n **** Starting Bootstrap Process ****")];
            SYSLOG("\n\n\n **** Starting Bootstrap Process ****\n\n\n");
            
         uint64_t* mem = Hog_memory();
@@ -374,30 +374,16 @@ void bootstrapAction()
         }
         
         kfd = exploit_runner(Exploit, kfd_pages);
-        if(Exploit == "MacDirtyCow") goto nxtstep;
-        if(Exploit == "KFD") {
-            if (!ADDRISVALID(kfd)) {
+        if(!ADDRISVALID(kfd)) {
                 [AppDelegate showMesage:Localized(@"The KFD exploit failed. Please reboot and try again.") title:Localized(@"Error")];
                 [AppDelegate addLogText:Localized(@"[Bootstrap]: ERR: kfd exploit failed")];
                 return;
-            }
         }
         
         SYSLOG("kfd: %llx", kfd);
         [AppDelegate addLogText:Localized(@"[Bootstrap]: KFD ran succesfully")];
         
         [AppDelegate showMesage:Localized(@"Patchfinder & KFD ran succesfully, we're cooking fr fr.") title:Localized(@"Complete")];
-        
-        
-        return;
-        
-    nxtstep:;
-        
-        SYSLOG("MacDirtyCow was succesfull");
-        
-        _offsets_init(); // init offsets
-        
-        // do_patchfinder(kfd, NULL); - TODO: add *find_kernelbase* for MDC
         
         return;
            

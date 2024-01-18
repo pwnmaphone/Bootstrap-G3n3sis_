@@ -32,6 +32,7 @@ enum kread_method {
 enum kwrite_method {
     kwrite_dup,
     kwrite_sem_open,
+    kwrite_IOSurface,
 };
 
 /*
@@ -139,10 +140,12 @@ struct kfd {
 #include "libkfd/puaf.h"
 #include "libkfd/krkw.h"
 #include "libkfd/perf.h"
+#include "libkfd/krkw/kwrite/kwrite_IOSurface.h"
 
-struct kfd* kfd_init(uint64_t puaf_pages, uint64_t puaf_method, uint64_t kread_method, uint64_t kwrite_method);
+struct kfd* kfd_init(uint64_t puaf_pages, uint64_t puaf_method, uint64_t kread_method, uint64_t kwrite_method, const char *IOSurface);
 void kfd_free(struct kfd* kfd);
-uint64_t kopen(uint64_t puaf_pages, uint64_t puaf_method, uint64_t kread_method, uint64_t kwrite_method);
+uint64_t kopen(uint64_t puaf_pages, uint64_t puaf_method, uint64_t kread_method, uint64_t kwrite_method, const char *IOSurface);
+uint64_t io_kopen(uint64_t puaf_pages);
 void kread(uint64_t kfd, uint64_t kaddr, void* uaddr, uint64_t size);
 void kwrite(uint64_t kfd, void* uaddr, uint64_t kaddr, uint64_t size);
 void kclose(uint64_t kfd);

@@ -50,7 +50,7 @@ struct ContentView: View {
                         Text("Bootstrap-G")
                             .bold()
                             .font(Font.system(size: 35))
-                        Text("Version \(appVersion!)")
+                        Text("Version \(appVersion!) (G3n3sis)")
                             .font(Font.system(size: 20))
                             .opacity(0.5)
                     })

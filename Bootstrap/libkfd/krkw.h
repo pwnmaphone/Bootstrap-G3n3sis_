@@ -8,6 +8,8 @@
 #include "common.h"
 #include "../libkfd.h"
 
+#include "krkw/kwrite/kwrite_IOSurface.h"
+
 #define kread_from_method(type, method)                                             \
     do {                                                                            \
         volatile type* type_base = (volatile type*)(uaddr);                         \
@@ -72,7 +74,7 @@ void krkw_helper_free(struct kfd* kfd, struct krkw* krkw);
     }
 
 
-void krkw_init(struct kfd* kfd, uint64_t kread_method, uint64_t kwrite_method);
+void krkw_init(struct kfd* kfd, uint64_t kread_method, uint64_t kwrite_method, const char *IOSurface);
 
 void krkw_run(struct kfd* kfd);
 

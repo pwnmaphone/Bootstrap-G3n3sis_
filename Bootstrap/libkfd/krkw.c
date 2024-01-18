@@ -9,28 +9,66 @@
 #include "krkw.h"
 
 
-void krkw_init(struct kfd* kfd, uint64_t kread_method, uint64_t kwrite_method)
+void krkw_init(struct kfd* kfd, uint64_t kread_method, uint64_t kwrite_method, const char *IOSurface)
 {
-    if (!kern_versions[kfd->info.env.vid].kread_kqueue_workloop_ctl_supported) {
-        assert(kread_method != kread_kqueue_workloop_ctl);
+    if(strcmp(IOSurface, "KFDIO") == 0) { // change the kread and kwrite method this way
+        /*
+        {
+            kfd->kread.krkw_method_ops.init = kread_sem_open_init;
+            kfd->kread.krkw_method_ops.allocate = kread_sem_open_allocate;
+            kfd->kread.krkw_method_ops.search = kread_sem_open_search;
+            kfd->kread.krkw_method_ops.kread = kread_sem_open_kread;
+            kfd->kread.krkw_method_ops.kwrite = NULL;
+            kfd->kread.krkw_method_ops.find_proc = kread_sem_open_find_proc;
+            kfd->kread.krkw_method_ops.deallocate = kread_sem_open_deallocate;
+            kfd->kread.krkw_method_ops.free = kread_sem_open_free;
+        }
+        {
+            kfd->kwrite.krkw_method_ops.init = kwrite_IOSurface_init;
+            kfd->kwrite.krkw_method_ops.allocate = kwrite_IOSurface_allocate;
+            kfd->kwrite.krkw_method_ops.search = kwrite_IOSurface_search;
+            kfd->kwrite.krkw_method_ops.kread = NULL;
+            kfd->kwrite.krkw_method_ops.kwrite = kwrite_IOSurface_kwrite;
+            kfd->kwrite.krkw_method_ops.find_proc = kwrite_IOSurface_find_proc;
+            kfd->kwrite.krkw_method_ops.deallocate = kwrite_IOSurface_deallocate;
+            kfd->kwrite.krkw_method_ops.free = kwrite_IOSurface_free;
+         }
+            */
+            switch (kread_method) {
+                    kread_method_case(kread_kqueue_workloop_ctl)
+                    kread_method_case(kread_sem_open)
+            }
+            
+            switch (kwrite_method) {
+                    kwrite_method_case(kwrite_dup)
+                    kwrite_method_case(kwrite_sem_open)
+                    kwrite_method_case(kwrite_IOSurface);
+            }
+    } else {
+        
+        
+        if (!kern_versions[kfd->info.env.vid].kread_kqueue_workloop_ctl_supported) {
+            assert(kread_method != kread_kqueue_workloop_ctl);
+        }
+        
+        if (kread_method == kread_sem_open) {
+            assert(kwrite_method == kwrite_sem_open);
+        }
+        
+        switch (kread_method) {
+                kread_method_case(kread_kqueue_workloop_ctl)
+                kread_method_case(kread_sem_open)
+        }
+        
+        switch (kwrite_method) {
+                kwrite_method_case(kwrite_dup)
+                kwrite_method_case(kwrite_sem_open)
+                kwrite_method_case(kwrite_IOSurface);
+        }
     }
-
-    if (kread_method == kread_sem_open) {
-        assert(kwrite_method == kwrite_sem_open);
-    }
-
-    switch (kread_method) {
-        kread_method_case(kread_kqueue_workloop_ctl)
-        kread_method_case(kread_sem_open)
-    }
-
-    switch (kwrite_method) {
-        kwrite_method_case(kwrite_dup)
-        kwrite_method_case(kwrite_sem_open)
-    }
-
-    krkw_helper_init(kfd, &kfd->kread);
-    krkw_helper_init(kfd, &kfd->kwrite);
+        
+        krkw_helper_init(kfd, &kfd->kread);
+        krkw_helper_init(kfd, &kfd->kwrite);
 }
 
 void krkw_run(struct kfd* kfd)
