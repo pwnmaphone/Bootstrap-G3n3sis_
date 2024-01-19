@@ -10,7 +10,7 @@ Bootstrap-G3n3sis_ is independent of Bootstrap (besides being updated to latest 
 Bootstrap G3n3sis *will* include:
 - Springboard Injection (in progress)
 - Possible SafeMode (in progress)
-- Support for all A12+ + iOS 15+ devices (in progress)
+- Support for all A12+ + iOS 15+ devices (iOS 15 support added, need to test for ios 16)
 
 ~ iOS 17 is obviously not supported (for now).
 
