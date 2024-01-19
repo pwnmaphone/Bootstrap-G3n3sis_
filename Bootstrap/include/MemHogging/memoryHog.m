@@ -52,7 +52,7 @@ uint64_t* Hog_memory(void) {
             old_memory_limit = memproperties.v1.memlimit_active;
             ret = memorystatus_control(MEMORYSTATUS_CMD_SET_JETSAM_TASK_LIMIT, getpid(), new_memory_limit, NULL, 0);
             if (ret == 0) {
-                SYSLOG(("[memHog]: The memory limit for pid %d has been set to %u MiB successfully"), getpid(), new_memory_limit);
+                SYSLOG("[memHog]: The memory limit for pid %d has been set to %u MiB successfully", getpid(), new_memory_limit);
             } else {
                 SYSLOG("[memHog]: Failed to set memory limit: %d (%s)", errno, strerror(errno));
                 return -1;

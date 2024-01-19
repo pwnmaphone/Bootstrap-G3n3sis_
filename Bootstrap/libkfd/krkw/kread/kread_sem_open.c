@@ -7,7 +7,6 @@
 
 #include <stdio.h>
 #include "kread_sem_open.h"
-// #include "../../../include/kernelpatchfinder/patchfinder.h"
 
 
 // #define ADDRISVALID(val) ((val) >= 0xffff000000000000 && (val) != 0xffffffffffffffff)
@@ -104,8 +103,8 @@ void kread_sem_open_find_proc(struct kfd* kfd)
     u64 pseminfo_kaddr = static_uget(psemnode, pinfo, kfd->kread.krkw_object_uaddr);
     u64 semaphore_kaddr = static_kget(pseminfo, u64, psem_semobject, pseminfo_kaddr);
     u64 task_kaddr = static_kget(semaphore, u64, owner, semaphore_kaddr);
-/*
-    if(!running_IO) { // just in case
+    
+    if(!running_IO) { // for ios 16+, need to use patchfinder to find these offsets
         //Step 1. break kaslr
         printf("kernel_task: 0x%llx\n", task_kaddr);
         
@@ -150,25 +149,25 @@ void kread_sem_open_find_proc(struct kfd* kfd)
         }
         
         kern_versions[kfd->info.env.vid].kernelcache__cdevsw = off_cdevsw;
-        assert(ADDRISVALID( kern_versions[kfd->info.env.vid].kernelcache__cdevsw));
+        //assert(ADDRISVALID( kern_versions[kfd->info.env.vid].kernelcache__cdevsw));
         kern_versions[kfd->info.env.vid].kernelcache__gPhysBase = off_gPhysBase;
-        assert(ADDRISVALID(kern_versions[kfd->info.env.vid].kernelcache__gPhysBase));
+        //assert(ADDRISVALID(kern_versions[kfd->info.env.vid].kernelcache__gPhysBase));
         kern_versions[kfd->info.env.vid].kernelcache__gPhysSize = off_gPhysSize;
-        assert(ADDRISVALID(kern_versions[kfd->info.env.vid].kernelcache__gPhysSize));
+        //assert(ADDRISVALID(kern_versions[kfd->info.env.vid].kernelcache__gPhysSize));
         kern_versions[kfd->info.env.vid].kernelcache__gVirtBase = off_gVirtBase;
-        assert(ADDRISVALID(kern_versions[kfd->info.env.vid].kernelcache__gVirtBase));
+        //assert(ADDRISVALID(kern_versions[kfd->info.env.vid].kernelcache__gVirtBase));
         kern_versions[kfd->info.env.vid].kernelcache__perfmon_dev_open = off_perfmon_dev_open;
-        assert(ADDRISVALID(kern_versions[kfd->info.env.vid].kernelcache__perfmon_dev_open));
+        //assert(ADDRISVALID(kern_versions[kfd->info.env.vid].kernelcache__perfmon_dev_open));
         kern_versions[kfd->info.env.vid].kernelcache__perfmon_devices = off_perfmon_devices;
-        assert(ADDRISVALID(kern_versions[kfd->info.env.vid].kernelcache__perfmon_devices));
+        //assert(ADDRISVALID(kern_versions[kfd->info.env.vid].kernelcache__perfmon_devices));
         kern_versions[kfd->info.env.vid].kernelcache__ptov_table = off_ptov_table;
-        assert(ADDRISVALID(kern_versions[kfd->info.env.vid].kernelcache__ptov_table));
+        //assert(ADDRISVALID(kern_versions[kfd->info.env.vid].kernelcache__ptov_table));
         kern_versions[kfd->info.env.vid].kernelcache__vn_kqfilter = off_vn_kqfilter;
-        assert(ADDRISVALID(kern_versions[kfd->info.env.vid].kernelcache__vn_kqfilter));
+        //assert(ADDRISVALID(kern_versions[kfd->info.env.vid].kernelcache__vn_kqfilter));
         kern_versions[kfd->info.env.vid].proc__object_size = off_proc_object_size;
-        assert(ADDRISVALID(kern_versions[kfd->info.env.vid].proc__object_size));
+        //assert(ADDRISVALID(kern_versions[kfd->info.env.vid].proc__object_size));
     }
-    */
+    
     u64 proc_kaddr = task_kaddr - dynamic_sizeof(proc);
     kfd->info.kernel.kernel_proc = proc_kaddr;
 

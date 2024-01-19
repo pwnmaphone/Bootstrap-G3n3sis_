@@ -354,12 +354,13 @@ void bootstrapAction()
     dispatch_async(dispatch_get_global_queue(0, 0), ^{
         
         uint64_t kfd = 0;
+        uint64_t* mem = NULL;
         const char *Exploit = NSProcessInfo.processInfo.operatingSystemVersion.majorVersion < 16 ? "KFDIO" : "KFD";
         
            [AppDelegate addLogText:Localized(@"\n **** Starting Bootstrap Process ****")];
            SYSLOG("\n\n\n **** Starting Bootstrap Process ****\n\n\n");
            
-            uint64_t* mem = Hog_memory();
+            mem = Hog_memory();
             if(mem == -1) {
                 SYSLOG("[warning]: Memory hogging failed, but will try kernel exploit anyway");
                 [AppDelegate addLogText:Localized(@"[warning]: Memory hogging failed, but will try kerel exploit anyway")];
@@ -371,7 +372,6 @@ void bootstrapAction()
         int kfd_pages = (hogged_memory == true ? 3079:2048);
         
         [AppDelegate addLogText:[NSString stringWithFormat:@"[Bootstrap]: Running %s exploit, using %d pages", Exploit, kfd_pages]];
-        
         kfd = exploit_runner(Exploit, kfd_pages);
         if(kfd == 0) {
                 [AppDelegate showMesage:Localized(@"The KFD exploit failed. Please reboot and try again.") title:Localized(@"Error")];
@@ -381,7 +381,17 @@ void bootstrapAction()
         
         SYSLOG("kfd: %llx", kfd);
         [AppDelegate addLogText:[NSString stringWithFormat:@"[Bootstrap]: KFD ran succesfully: %llx", kfd]];
+     /*
+        _offsets_init(); // initiate offsets
+        bool replaced = enable_sbInjection(kfd, 1); // initiate SpringBoard Injection
+        if(replaced == false) {
+            [AppDelegate showMesage:Localized(@"Bootstrap was unable to setup SpringBoard injection. Please reboot and try again.") title:Localized(@"Error")];
+            [AppDelegate addLogText:Localized(@"ERR: SpringBoard injection setup failed")];
+            return;
+        }
+        */
         
+        [AppDelegate showMesage:Localized(@"KFD = success, WE'RE COOKING ") title:Localized(@"Complete")];
         kclose(kfd);
         return;
     });

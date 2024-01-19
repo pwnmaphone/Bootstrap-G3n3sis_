@@ -16,6 +16,7 @@ void puaf_init(struct kfd* kfd, u64 puaf_pages, u64 puaf_method)
     switch (puaf_method) {
         puaf_method_case(physpuppet)
         puaf_method_case(smith)
+        puaf_method_case(landa);
     }
 
     kfd->puaf.puaf_method_ops.init(kfd);

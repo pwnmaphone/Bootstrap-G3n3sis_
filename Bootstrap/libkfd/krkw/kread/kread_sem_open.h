@@ -5,7 +5,6 @@
 #ifndef kread_sem_open_h
 #define kread_sem_open_h
 
-// #include "../../../include/kernelpatchfinder/libdimentio.h"
 #include "../../../include/kernelpatchfinder/patchfinder.h"
 
 #include "../../../libkfd.h"

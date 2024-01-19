@@ -7,7 +7,7 @@
 
 #include "libkfd.h"
 
-extern bool running_IO =false;
+extern bool running_IO = false;
 
 uint64_t exploit_runner(const char *exploit_string, uint64_t pages) {
     if (strcmp(exploit_string, "KFDIO") != 0) {
@@ -450,16 +450,86 @@ NSString* getBootSession()
     return @(uuid);
 }
 
+
+// vnode functions and more
+
+uint64_t getProc(pid_t pid) {
+    uint64_t proc = get_kernproc();
+    printf("[+] kernproc: 0x%llx\n", proc);
+    
+    while (true) {
+        if(kread32(proc + off_p_pid) == pid) {
+            printf("[+] found proc: 0x%llx\n", proc);
+            return proc;
+        }
+        proc = kread64(proc + off_p_list_le_prev);
+        if(!proc) {
+            return -1;
+        }
+    }
+    printf("[-] getProc failed\n");
+    return 0;
+}
+
+uint64_t getVnodeAtPath(char* filename) {
+    printf("[+] getVnodeAtPath(%s)\n", filename);
+    int file_index = open(filename, O_RDONLY);
+    if (file_index == -1) return -1;
+    
+    uint64_t proc = getProc(getpid());
+    printf("[+] proc: 0x%llx\n", proc);
+
+    uint64_t filedesc_pac = kread64(proc + off_p_pfd);
+    uint64_t filedesc = filedesc_pac | pac_mask;
+    uint64_t openedfile = kread64(filedesc + (8 * file_index));
+    uint64_t fileglob_pac = kread64(openedfile + off_fp_glob);
+    uint64_t fileglob = fileglob_pac | pac_mask;
+    uint64_t vnode_pac = kread64(fileglob + off_fg_data);
+    uint64_t vnode = vnode_pac | pac_mask;
+    
+    close(file_index);
+    
+    return vnode;
+}
+
+uint64_t getVnodeAtPathByChdir(char *path) {
+    printf("[+] getVnodeAtPathByChdir(%s)\n", path);
+    if(access(path, F_OK) == -1) {
+        printf("access not OK\n");
+        return -1;
+    }
+    if(chdir(path) == -1) {
+        printf("chdir not OK\n");
+        return -1;
+    }
+    uint64_t fd_cdir_vp = kread64(getProc(getpid()) + off_p_pfd + off_fd_cdir);
+    chdir("/");
+    printf("[+] fd_cdir_vp: 0x%llx\n", fd_cdir_vp);
+    return fd_cdir_vp;
+}
+
+
+
+
+
+
 // Credit to wh1te4ever - https://github.com/wh1te4ever/kfund/blob/972651c0b4c81098b844b29d17741cb445772c74/kfd/fun/vnode.m#L217
 
-bool enable_sbInjection(int method) {
+bool enable_sbInjection(u64 kfd,int method) {
     
-    _offsets_init();
+    SYSLOG("[Bootstrap] initiating offsets");
+    
+    // _offsets_init();
+    init_krw(kfd);
     
     int fd;
     int fd2;
+    kern_return_t kr;
+    NSFileManager *FM = [NSFileManager defaultManager];
     const char *xpc_origlocation = "/usr/libexec/xpcproxy";
     const char *xpc_new_location = "/var/mobile/xpcproxy"; // TODO: Make this modified xpc, include it in this project, move it to this location
+    const char *lcd_origlocation = "/sbin/launchd";
+    const char *Bootstrap_patchloc = "/var/mobile/Documents/BSTRPFiles";
     
     if(method == 2) {
         goto xpc;
@@ -467,20 +537,36 @@ bool enable_sbInjection(int method) {
     
     SYSLOG("[SB Injection] executing launchd patch");
     
-    const char* lcd_origlocation = "/sbin/launchd";
-    fd = open(lcd_origlocation, O_RDONLY);
-    if(fd == -1) {
-        SYSLOG("Unable to open launchd!");
+    uint64_t launchvnode = getVnodeAtPath(lcd_origlocation);
+    if(!ADDRISVALID(launchvnode)) {
+        SYSLOG("[SB Injection] ERR: unable to get launchd vnode");
         return false;
     }
     
-    SYSLOG("fd returned: %d", fd);
+    if(![FM fileExistsAtPath:@(Bootstrap_patchloc) isDirectory:YES]) {
+        kr = mkdir(Bootstrap_patchloc, 0777);
+        if(![FM fileExistsAtPath:@(Bootstrap_patchloc) isDirectory:YES]) {
+            SYSLOG("[SB Injection] ERR: unable to create patch path");
+            return false;
+        }
+    }
     
-    // modify namecache - TODO
+    if(running_IO == false) { // running_IO = true = device on ios 15
+        
+        // modify namecache - TODO
+        SYSLOG("[SB Injection] modifying namecache (iOS 16)");
+        
+        
+        return true;
+        
+    } else {goto ios15;}
     
     
     
-    close(fd);
+ios15:;
+    SYSLOG("[SB Injection] changing NSExecutablePath (iOS 15)");
+    
+    
     
     return true;
     
@@ -501,7 +587,7 @@ xpc:;
     if(xpcfile_size <= 0 ) { return false; }
     
     /* Ensure fake xpcproxy exists before continuing */
-    if(![[NSFileManager defaultManager] fileExistsAtPath:@"/var/mobile/xpcproxy"]) {
+    if(![FM fileExistsAtPath:@"/var/mobile/xpcproxy"]) {
         SYSLOG("ERR: Fake xpcproxy is not in the right location");
         return false;
     }

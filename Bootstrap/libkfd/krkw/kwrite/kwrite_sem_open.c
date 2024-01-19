@@ -17,7 +17,7 @@ void kwrite_sem_open_init(struct kfd* kfd)
     kfd->kwrite.krkw_method_data = kfd->kread.krkw_method_data;
 }
 
-void kwrite_sem_open_allocate(struct kfd* kfd, uint64_t id)
+void kwrite_sem_open_allocate(struct kfd* kfd, u64 id)
 {
     if (id == 0) {
         id = kfd->kwrite.krkw_allocated_id = kfd->kread.krkw_allocated_id;
@@ -37,7 +37,7 @@ void kwrite_sem_open_allocate(struct kfd* kfd, uint64_t id)
     kread_sem_open_allocate(kfd, id);
 }
 
-bool kwrite_sem_open_search(struct kfd* kfd, uint64_t object_uaddr)
+bool kwrite_sem_open_search(struct kfd* kfd, u64 object_uaddr)
 {
     /*
      * Just piggyback.
@@ -45,7 +45,7 @@ bool kwrite_sem_open_search(struct kfd* kfd, uint64_t object_uaddr)
     return kwrite_dup_search(kfd, object_uaddr);
 }
 
-void kwrite_sem_open_kwrite(struct kfd* kfd, void* uaddr, uint64_t kaddr, uint64_t size)
+void kwrite_sem_open_kwrite(struct kfd* kfd, void* uaddr, u64 kaddr, u64 size)
 {
     /*
      * Just piggyback.
@@ -61,14 +61,14 @@ void kwrite_sem_open_find_proc(struct kfd* kfd)
     return;
 }
 
-void kwrite_sem_open_deallocate(struct kfd* kfd, uint64_t id)
+void kwrite_sem_open_deallocate(struct kfd* kfd, u64 id)
 {
     /*
      * Skip the deallocation for the kread object because we are
      * responsible for deallocating all the shared file descriptors.
      */
     if (id != kfd->kread.krkw_object_id) {
-        int32_t* fds = (int32_t*)(kfd->kwrite.krkw_method_data);
+        i32* fds = (i32*)(kfd->kwrite.krkw_method_data);
         assert_bsd(close(fds[id]));
     }
 }
@@ -79,11 +79,9 @@ void kwrite_sem_open_free(struct kfd* kfd)
      * Note that we are responsible to deallocate the kread object, but we must
      * discard its object id because of the check in kwrite_sem_open_deallocate().
      */
-    uint64_t kread_id = kfd->kread.krkw_object_id;
+    u64 kread_id = kfd->kread.krkw_object_id;
     kfd->kread.krkw_object_id = (-1);
     kwrite_sem_open_deallocate(kfd, kread_id);
     kwrite_sem_open_deallocate(kfd, kfd->kwrite.krkw_object_id);
     kwrite_sem_open_deallocate(kfd, kfd->kwrite.krkw_maximum_id);
 }
-
-

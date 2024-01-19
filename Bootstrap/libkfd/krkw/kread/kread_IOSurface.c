@@ -99,8 +99,7 @@ void get_kernel_section(struct kfd* kfd, u64 kernel_base, const char *segment, c
 }
 
 // credits to pongoOS KPF for the next two functions
-static inline int64_t sxt64(int64_t value, uint8_t bits)
-{
+static inline int64_t sxt64(int64_t value, uint8_t bits) {
     value = ((uint64_t)value) << (64 - bits);
     value >>= (64 - bits);
     return value;
@@ -206,8 +205,7 @@ u64 patchfind_kernproc(struct kfd* kfd, u64 kernel_base)
     return ((adrpKaddr & ~0xfff) + adrp_imm) + ldr_imm;
 }
 
-void kread_IOSurface_find_proc(struct kfd* kfd)
-{
+void kread_IOSurface_find_proc(struct kfd* kfd) {
     u64 textPtr = unsign_kaddr(dynamic_uget(IOSurface, isa, kfd->kread.krkw_object_uaddr));
     
     struct mach_header_64 kernel_header;

@@ -26,6 +26,8 @@ uint64_t get_selfpmap(void);
 
 uint64_t get_kerntask(void);
 
+void init_krw(uint64_t kfd_addr);
+
 uint8_t kread8(uint64_t where);
 
 uint32_t kread16(uint64_t where);
