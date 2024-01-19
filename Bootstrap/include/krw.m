@@ -64,23 +64,23 @@ void do_kwrite(void* uaddr, uint64_t kaddr, uint64_t size)
 }
 
 uint64_t get_kslide(void) {
-    return ((struct kfd*)_kfd)->perf.kernel_slide;
+    return ((struct kfd*)_kfd)->info.kernel.kernel_slide;
 }
 
 uint64_t get_kernproc(void) {
-    return ((struct kfd*)_kfd)->info.kaddr.kernel_proc;
+    return ((struct kfd*)_kfd)->info.kernel.kernel_proc;
 }
 
 uint64_t get_selftask(void) {
-    return ((struct kfd*)_kfd)->info.kaddr.current_task;
+    return ((struct kfd*)_kfd)->info.kernel.current_task;
 }
 
 uint64_t get_selfpmap(void) {
-    return ((struct kfd*)_kfd)->info.kaddr.current_pmap;
+    return ((struct kfd*)_kfd)->info.kernel.current_pmap;
 }
 
 uint64_t get_kerntask(void) {
-    return ((struct kfd*)_kfd)->info.kaddr.kernel_task;
+    return ((struct kfd*)_kfd)->info.kernel.kernel_task;
 }
 
 

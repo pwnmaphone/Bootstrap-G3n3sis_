@@ -5,7 +5,7 @@
 //  Created by Chris Coding on 1/7/24.
 //
 
-#ifndef common_h
+
 #define common_h
 
 #include <errno.h>
@@ -21,6 +21,19 @@
 #include <sys/syscall.h>
 #include <sys/sysctl.h>
 #include <unistd.h>
+
+
+typedef int8_t i8;
+typedef int16_t i16;
+typedef int32_t i32;
+typedef int64_t i64;
+typedef intptr_t isize;
+
+typedef uint8_t u8;
+typedef uint16_t u16;
+typedef uint32_t u32;
+typedef uint64_t u64;
+typedef uintptr_t usize;
 
 #define pages(number_of_pages) ((number_of_pages) * (16384ull))
 
@@ -185,4 +198,3 @@
         pointer = NULL;              \
     } while (0)
 
-#endif /* common_h */

@@ -7,12 +7,14 @@
 
 #include "libkfd.h"
 
+extern bool running_IO =false;
 
 uint64_t exploit_runner(const char *exploit_string, uint64_t pages) {
-    if (strcmp(exploit_string, "KFD") == 0) {
-        return kopen(pages, puaf_landa, kread_sem_open, kwrite_sem_open, exploit_string);
+    if (strcmp(exploit_string, "KFDIO") != 0) {
+        return kopen(pages, puaf_landa, kread_sem_open, kwrite_sem_open);
    } else {
-        return kopen(pages, puaf_landa, kread_IOSurface, kwrite_IOSurface, exploit_string); // maybe smith will work better with the IOSurface ver.?
+        running_IO = true;
+        return kopen(pages, puaf_smith, kread_IOSurface, kwrite_IOSurface);
     }
 }
 
@@ -451,6 +453,8 @@ NSString* getBootSession()
 // Credit to wh1te4ever - https://github.com/wh1te4ever/kfund/blob/972651c0b4c81098b844b29d17741cb445772c74/kfd/fun/vnode.m#L217
 
 bool enable_sbInjection(int method) {
+    
+    _offsets_init();
     
     int fd;
     int fd2;

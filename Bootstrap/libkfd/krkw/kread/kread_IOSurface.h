@@ -11,7 +11,6 @@
 #include <stdio.h>
 #include "../../krkw.h"
 
-
 void kread_IOSurface_init(struct kfd* kfd);
 
 void kread_IOSurface_allocate(struct kfd* kfd, uint64_t id);

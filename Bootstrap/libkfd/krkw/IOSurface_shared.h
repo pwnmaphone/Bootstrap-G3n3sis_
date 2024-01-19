@@ -31,12 +31,25 @@ extern "C" {
 #define True   1
 
 
+typedef struct IOSurfaceFastCreateArgs
+{
+        uint64_t IOSurfaceAddress;
+        uint32_t IOSurfaceWidth;
+        uint32_t IOSurfaceHeight;
+        uint32_t IOSurfacePixelFormat;
+        uint32_t IOSurfaceBytesPerElement;
+        uint32_t IOSurfaceBytesPerRow;
+        uint32_t IOSurfaceAllocSize;
+} IOSurfaceFastCreateArgs;
+
 #define CHECK_IOKIT_ERR(kr,name)  do {                          \
                 if (kr != KERN_SUCCESS) {                       \
                         printf("%s : %s (0x%x)\n",              \
                                name,mach_error_string(kr),kr);  \
                 }                                               \
         }while(0);
+        typedef uint64_t u64;
+        typedef uint32_t u32;
 
 
 CFNumberRef CFInt32(int32_t value);
@@ -66,9 +79,8 @@ typedef mach_port_t io_object_t;
 typedef mach_port_t io_registry_entry_t;
 
 #ifndef IO_OBJECT_NULL
-# define IO_OBJECT_NULL 0
+#define IO_OBJECT_NULL 0
 #endif
-
 extern const mach_port_t kIOMasterPortDefault;
 
 kern_return_t IOConnectCallMethod(mach_port_t connection, uint32_t selector, const uint64_t *input, uint32_t inputCnt, const void *inputStruct, size_t inputStructCnt, uint64_t *output, uint32_t *outputCnt, void *outputStruct, size_t *outputStructCnt);
@@ -81,7 +93,12 @@ kern_return_t IOServiceClose(io_connect_t connect);
 uint32_t IOObjectGetRetainCount(io_object_t object);
 uint32_t IOObjectGetKernelRetainCount(io_object_t object);
 uint32_t IOObjectGetRetainCount(io_object_t object);
-kern_return_t io_object_get_retain_count(mach_port_t object, uint32_t *retainCount);
+kern_return_t io_object_get_retain_count(mach_port_t object,uint32_t *retainCount);
+io_connect_t get_surface_client(void);
+io_connect_t create_surface_fast_path(io_connect_t surface,uint32_t *surface_id,IOSurfaceFastCreateArgs *args);
+io_connect_t release_surface(io_connect_t surface,uint32_t surface_id);
+kern_return_t iosurface_get_use_count(io_connect_t c,uint32_t surface_id,uint32_t *output);
+void set_indexed_timestamp(io_connect_t c,uint32_t surface_id,uint64_t index,uint64_t value);
 kern_return_t IOObjectRelease(io_object_t object);
 kern_return_t IORegistryEntrySetCFProperties(io_registry_entry_t entry, CFTypeRef properties);
 kern_return_t IOConnectSetNotificationPort(io_connect_t connect, uint32_t type, mach_port_t port, uintptr_t reference);
@@ -110,32 +127,14 @@ typedef struct {
 
 #include <IOSurface/IOSurfaceRef.h>
 
-#define IOSurfaceLockResultSize 0xA68 // ios 16
+#define IOSurfaceLockResultSize 0xF60
 
 #define kOSSerializeBinarySignature        0x000000D3
 #define kOSSerializeIndexedBinarySignature 0x000000D4
 
-typedef struct IOSurfaceFastCreateArgs
-{
-        uint64_t IOSurfaceAddress;
-        uint32_t IOSurfaceWidth;
-        uint32_t IOSurfaceHeight;
-        uint32_t IOSurfacePixelFormat;
-        uint32_t IOSurfaceBytesPerElement;
-        uint32_t IOSurfaceBytesPerRow;
-        uint32_t IOSurfaceAllocSize;
-} IOSurfaceFastCreateArgs;
 
 struct iosurface_obj {
     io_connect_t port;
     uint32_t surface_id;
 };
-
-io_connect_t iokit_get_connection(const char *name, unsigned int type);
-io_connect_t get_surface_client(void);
-io_connect_t create_surface_fast_path(io_connect_t surface, uint32_t *surface_id, IOSurfaceFastCreateArgs *args);
-io_connect_t release_surface(io_connect_t surface, uint32_t surface_id);
-void set_indexed_timestamp(io_connect_t c, uint32_t surface_id, uint64_t index, uint64_t value);
-kern_return_t iosurface_get_use_count(io_connect_t c, uint32_t surface_id, uint32_t *output);
-
 #endif /* IOSurface_shared_h */

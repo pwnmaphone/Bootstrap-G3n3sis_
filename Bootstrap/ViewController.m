@@ -350,6 +350,7 @@ BOOL opensshAction(BOOL enable)
 
 void bootstrapAction()
 {
+    
     dispatch_async(dispatch_get_global_queue(0, 0), ^{
         
         uint64_t kfd = 0;
@@ -358,46 +359,33 @@ void bootstrapAction()
            [AppDelegate addLogText:Localized(@"\n **** Starting Bootstrap Process ****")];
            SYSLOG("\n\n\n **** Starting Bootstrap Process ****\n\n\n");
            
-        uint64_t* mem = Hog_memory();
-        if(mem == -1) {
-            SYSLOG("[warning]: Memory hogging failed, but will try kernel exploit anyway");
-            [AppDelegate addLogText:Localized(@"[warning]: Memory hogging failed, but will try kerel exploit anyway")];
-        } else {
-            [AppDelegate addLogText:Localized(@"[Bootstrap]: HogMemory ran successfully")];
-        }
-        sleep(3);
+            uint64_t* mem = Hog_memory();
+            if(mem == -1) {
+                SYSLOG("[warning]: Memory hogging failed, but will try kernel exploit anyway");
+                [AppDelegate addLogText:Localized(@"[warning]: Memory hogging failed, but will try kerel exploit anyway")];
+                sleep(3);
+            } else {
+                [AppDelegate addLogText:Localized(@"[Bootstrap]: HogMemory ran successfully")];
+                sleep(3);
+            }
         int kfd_pages = (hogged_memory == true ? 3079:2048);
         
-        [AppDelegate addLogText:[NSString stringWithFormat:@"[Bootstrap]: Running %s exploit", Exploit]];
-        if(Exploit == "KFD") {
-            [AppDelegate addLogText:[NSString stringWithFormat:@"[Bootstrap] using %d pages", kfd_pages]];
-        }
+        [AppDelegate addLogText:[NSString stringWithFormat:@"[Bootstrap]: Running %s exploit, using %d pages", Exploit, kfd_pages]];
         
         kfd = exploit_runner(Exploit, kfd_pages);
-        if(!ADDRISVALID(kfd)) {
+        if(kfd == 0) {
                 [AppDelegate showMesage:Localized(@"The KFD exploit failed. Please reboot and try again.") title:Localized(@"Error")];
                 [AppDelegate addLogText:Localized(@"[Bootstrap]: ERR: kfd exploit failed")];
                 return;
         }
         
         SYSLOG("kfd: %llx", kfd);
-        [AppDelegate addLogText:Localized(@"[Bootstrap]: KFD ran succesfully")];
+        [AppDelegate addLogText:[NSString stringWithFormat:@"[Bootstrap]: KFD ran succesfully: %llx", kfd]];
         
-        [AppDelegate showMesage:Localized(@"Patchfinder & KFD ran succesfully, we're cooking fr fr.") title:Localized(@"Complete")];
-        
+        kclose(kfd);
         return;
-           
-       });
-
-      /*
-       _offsets_init(); // initiate offsets
-       bool replaced = enable_sbInjection(1); // initiate SpringBoard Injection
-       if(replaced == false) {
-           [AppDelegate showMesage:Localized(@"Bootstrap was unable to setup SpringBoard injection. Please reboot and try again.") title:Localized(@"Error")];
-           [AppDelegate addLogText:Localized(@"ERR: SpringBoard injection setup failed")];
-           return;
-       }
-        */
+    });
+    
     /*
     if(isSystemBootstrapped())
     {

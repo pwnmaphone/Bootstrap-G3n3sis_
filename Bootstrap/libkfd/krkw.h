@@ -8,14 +8,11 @@
 #include "common.h"
 #include "../libkfd.h"
 
-#include "krkw/kwrite/kwrite_IOSurface.h"
-#include "krkw/kread/kread_IOSurface.h"
-
 #define kread_from_method(type, method)                                             \
     do {                                                                            \
         volatile type* type_base = (volatile type*)(uaddr);                         \
-        uint64_t type_size = ((size) / (sizeof(type)));                                  \
-        for (uint64_t type_offset = 0; type_offset < type_size; type_offset++) {         \
+        u64 type_size = ((size) / (sizeof(type)));                                  \
+        for (u64 type_offset = 0; type_offset < type_size; type_offset++) {         \
             type type_value = method(kfd, kaddr + (type_offset * sizeof(type)));    \
             type_base[type_offset] = type_value;                                    \
         }                                                                           \
@@ -23,12 +20,13 @@
 
 #include "krkw/kread/kread_kqueue_workloop_ctl.h"
 #include "krkw/kread/kread_sem_open.h"
+#include "krkw/kread/kread_IOSurface.h"
 
 #define kwrite_from_method(type, method)                                       \
     do {                                                                       \
         volatile type* type_base = (volatile type*)(uaddr);                    \
-        uint64_t type_size = ((size) / (sizeof(type)));                             \
-        for (uint64_t type_offset = 0; type_offset < type_size; type_offset++) {    \
+        u64 type_size = ((size) / (sizeof(type)));                             \
+        for (u64 type_offset = 0; type_offset < type_size; type_offset++) {    \
             type type_value = type_base[type_offset];                          \
             method(kfd, kaddr + (type_offset * sizeof(type)), type_value);     \
         }                                                                      \
@@ -36,6 +34,7 @@
 
 #include "krkw/kwrite/kwrite_dup.h"
 #include "krkw/kwrite/kwrite_sem_open.h"
+#include "krkw/kwrite/kwrite_IOSurface.h"
 
 // Forward declarations for helper functions.
 void krkw_helper_init(struct kfd* kfd, struct krkw* krkw);
@@ -74,8 +73,7 @@ void krkw_helper_free(struct kfd* kfd, struct krkw* krkw);
         break;                                                           \
     }
 
-
-void krkw_init(struct kfd* kfd, uint64_t kread_method, uint64_t kwrite_method, const char *IOSurface);
+void krkw_init(struct kfd* kfd, uint64_t kread_method, uint64_t kwrite_method);
 
 void krkw_run(struct kfd* kfd);
 

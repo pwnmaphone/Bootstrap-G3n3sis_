@@ -12,14 +12,9 @@
 #include "../libkfd.h"
 #include "common.h"
 
-/*
- * Helper puaf functions.
- */
-
-void puaf_helper_get_vm_map_first_and_last(uint64_t* first_out, uint64_t* last_out);
-
-void puaf_helper_get_vm_map_min_and_max(uint64_t* min_out, uint64_t* max_out);
-
+// Forward declarations for helper functions.
+void puaf_helper_get_vm_map_first_and_last(u64* first_out, u64* last_out);
+void puaf_helper_get_vm_map_min_and_max(u64* min_out, u64* max_out);
 void puaf_helper_give_ppl_pages(void);
 
 #define puaf_method_case(method)                                 \

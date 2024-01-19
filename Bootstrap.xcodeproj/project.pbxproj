@@ -41,10 +41,10 @@
 		AD11E9352B57A13300529403 /* kread_sem_open.c in Sources */ = {isa = PBXBuildFile; fileRef = AD11E91E2B57A13300529403 /* kread_sem_open.c */; };
 		AD11E9362B57A13300529403 /* kwrite_sem_open.c in Sources */ = {isa = PBXBuildFile; fileRef = AD11E9212B57A13300529403 /* kwrite_sem_open.c */; };
 		AD11E9372B57A13300529403 /* kwrite_dup.c in Sources */ = {isa = PBXBuildFile; fileRef = AD11E9222B57A13300529403 /* kwrite_dup.c */; };
-		AD11E9382B57A13300529403 /* perf.c in Sources */ = {isa = PBXBuildFile; fileRef = AD11E9272B57A13300529403 /* perf.c */; };
+		AD11E9382B57A13300529403 /* perf.m in Sources */ = {isa = PBXBuildFile; fileRef = AD11E9272B57A13300529403 /* perf.m */; };
 		AD11E9392B57A13300529403 /* puaf.c in Sources */ = {isa = PBXBuildFile; fileRef = AD11E9282B57A13300529403 /* puaf.c */; };
 		AD11E93A2B57A13300529403 /* krkw.c in Sources */ = {isa = PBXBuildFile; fileRef = AD11E92A2B57A13300529403 /* krkw.c */; };
-		AD11E93B2B57A13300529403 /* info.c in Sources */ = {isa = PBXBuildFile; fileRef = AD11E92C2B57A13300529403 /* info.c */; };
+		AD11E93B2B57A13300529403 /* info.m in Sources */ = {isa = PBXBuildFile; fileRef = AD11E92C2B57A13300529403 /* info.m */; };
 		AD11E9402B57A13D00529403 /* libdimentio.m in Sources */ = {isa = PBXBuildFile; fileRef = AD11E93D2B57A13D00529403 /* libdimentio.m */; };
 		AD11E9412B57A13D00529403 /* patchfinder.m in Sources */ = {isa = PBXBuildFile; fileRef = AD11E93E2B57A13D00529403 /* patchfinder.m */; };
 		AD11E9442B57A14600529403 /* memoryHog.m in Sources */ = {isa = PBXBuildFile; fileRef = AD11E9432B57A14600529403 /* memoryHog.m */; };
@@ -157,12 +157,12 @@
 		AD11E9242B57A13300529403 /* kwrite_dup.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = kwrite_dup.h; sourceTree = "<group>"; };
 		AD11E9252B57A13300529403 /* info.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = info.h; sourceTree = "<group>"; };
 		AD11E9262B57A13300529403 /* krkw.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = krkw.h; sourceTree = "<group>"; };
-		AD11E9272B57A13300529403 /* perf.c */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.c; path = perf.c; sourceTree = "<group>"; };
+		AD11E9272B57A13300529403 /* perf.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = perf.m; sourceTree = "<group>"; };
 		AD11E9282B57A13300529403 /* puaf.c */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.c; path = puaf.c; sourceTree = "<group>"; };
 		AD11E9292B57A13300529403 /* puaf.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = puaf.h; sourceTree = "<group>"; };
 		AD11E92A2B57A13300529403 /* krkw.c */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.c; path = krkw.c; sourceTree = "<group>"; };
 		AD11E92B2B57A13300529403 /* common.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = common.h; sourceTree = "<group>"; };
-		AD11E92C2B57A13300529403 /* info.c */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.c; path = info.c; sourceTree = "<group>"; };
+		AD11E92C2B57A13300529403 /* info.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = info.m; sourceTree = "<group>"; };
 		AD11E92D2B57A13300529403 /* perf.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = perf.h; sourceTree = "<group>"; };
 		AD11E92F2B57A13300529403 /* static_info.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = static_info.h; sourceTree = "<group>"; };
 		AD11E9302B57A13300529403 /* dynamic_info.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = dynamic_info.h; sourceTree = "<group>"; };
@@ -312,12 +312,12 @@
 			children = (
 				AD11E92B2B57A13300529403 /* common.h */,
 				AD11E92E2B57A13300529403 /* info */,
-				AD11E92C2B57A13300529403 /* info.c */,
+				AD11E92C2B57A13300529403 /* info.m */,
 				AD11E9252B57A13300529403 /* info.h */,
 				AD11E91A2B57A13300529403 /* krkw */,
 				AD11E92A2B57A13300529403 /* krkw.c */,
 				AD11E9262B57A13300529403 /* krkw.h */,
-				AD11E9272B57A13300529403 /* perf.c */,
+				AD11E9272B57A13300529403 /* perf.m */,
 				AD11E92D2B57A13300529403 /* perf.h */,
 				AD11E9132B57A13300529403 /* puaf */,
 				AD11E9282B57A13300529403 /* puaf.c */,
@@ -538,10 +538,10 @@
 			buildActionMask = 2147483647;
 			files = (
 				AD11E93A2B57A13300529403 /* krkw.c in Sources */,
-				AD11E9382B57A13300529403 /* perf.c in Sources */,
+				AD11E9382B57A13300529403 /* perf.m in Sources */,
 				AD11E9342B57A13300529403 /* kread_kqueue_workloop_ctl.c in Sources */,
 				847099A32B1D868F003FA4ED /* Makefile in Sources */,
-				AD11E93B2B57A13300529403 /* info.c in Sources */,
+				AD11E93B2B57A13300529403 /* info.m in Sources */,
 				8470998D2B1D855D003FA4ED /* ViewController.m in Sources */,
 				FE895FE82B418FB900A16882 /* ContentView.swift in Sources */,
 				FE0633AE2B41BCD900B94787 /* OptionsView.swift in Sources */,
