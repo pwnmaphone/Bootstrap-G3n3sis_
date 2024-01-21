@@ -239,6 +239,15 @@ void smith_helper_init(struct kfd* kfd)
         }
 
         assert(kret == KERN_SUCCESS);
+        
+        /*
+              * Quick hack: pre-fault code pages to avoid faults during the critical section.
+              */
+             if (data.protection & VM_PROT_EXECUTE) {
+                 for (u64 page_address = address; page_address < address + size; page_address += pages(1)) {
+                     u64 tmp_value = *(volatile u64*)(page_address);
+                 }
+             }
 
         vm_address_t hole_address = prev_vme_end;
         vm_size_t hole_size = address - prev_vme_end;

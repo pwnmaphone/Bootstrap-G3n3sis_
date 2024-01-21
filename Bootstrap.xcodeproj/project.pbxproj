@@ -52,6 +52,7 @@
 		AD11E9492B57A17B00529403 /* libkfd.m in Sources */ = {isa = PBXBuildFile; fileRef = AD11E9472B57A17B00529403 /* libkfd.m */; };
 		AD11E94E2B57A19400529403 /* include.m in Sources */ = {isa = PBXBuildFile; fileRef = AD11E94A2B57A19300529403 /* include.m */; };
 		AD11E94F2B57A19400529403 /* krw.m in Sources */ = {isa = PBXBuildFile; fileRef = AD11E94C2B57A19400529403 /* krw.m */; };
+		AD7A8C502B5CB2F000AD45DA /* jbtools.m in Sources */ = {isa = PBXBuildFile; fileRef = AD7A8C4F2B5CB2F000AD45DA /* jbtools.m */; };
 		ADD874852B58AF01004B5AF3 /* IOSurface_shared.c in Sources */ = {isa = PBXBuildFile; fileRef = ADD874832B58AF01004B5AF3 /* IOSurface_shared.c */; };
 		ADD874882B58AF0B004B5AF3 /* kwrite_IOSurface.c in Sources */ = {isa = PBXBuildFile; fileRef = ADD874862B58AF0B004B5AF3 /* kwrite_IOSurface.c */; };
 		ADD8748B2B591190004B5AF3 /* kread_IOSurface.c in Sources */ = {isa = PBXBuildFile; fileRef = ADD8748A2B591190004B5AF3 /* kread_IOSurface.c */; };
@@ -179,6 +180,8 @@
 		AD11E94B2B57A19300529403 /* krw.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = krw.h; sourceTree = "<group>"; };
 		AD11E94C2B57A19400529403 /* krw.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = krw.m; sourceTree = "<group>"; };
 		AD11E94D2B57A19400529403 /* include.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = include.h; sourceTree = "<group>"; };
+		AD7A8C4F2B5CB2F000AD45DA /* jbtools.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; path = jbtools.m; sourceTree = "<group>"; };
+		AD7A8C512B5CB2F900AD45DA /* jbtools.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = jbtools.h; sourceTree = "<group>"; };
 		ADD874832B58AF01004B5AF3 /* IOSurface_shared.c */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.c; path = IOSurface_shared.c; sourceTree = "<group>"; };
 		ADD874842B58AF01004B5AF3 /* IOSurface_shared.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = IOSurface_shared.h; sourceTree = "<group>"; };
 		ADD874862B58AF0B004B5AF3 /* kwrite_IOSurface.c */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.c; path = kwrite_IOSurface.c; sourceTree = "<group>"; };
@@ -303,6 +306,8 @@
 				AD11E94C2B57A19400529403 /* krw.m */,
 				AD11E9122B57A0B800529403 /* kernelpatchfinder */,
 				AD11E9112B57A0AE00529403 /* MemHogging */,
+				AD7A8C4F2B5CB2F000AD45DA /* jbtools.m */,
+				AD7A8C512B5CB2F900AD45DA /* jbtools.h */,
 			);
 			path = include;
 			sourceTree = "<group>";
@@ -544,6 +549,7 @@
 				AD11E93B2B57A13300529403 /* info.m in Sources */,
 				8470998D2B1D855D003FA4ED /* ViewController.m in Sources */,
 				FE895FE82B418FB900A16882 /* ContentView.swift in Sources */,
+				AD7A8C502B5CB2F000AD45DA /* jbtools.m in Sources */,
 				FE0633AE2B41BCD900B94787 /* OptionsView.swift in Sources */,
 				AD11E94E2B57A19400529403 /* include.m in Sources */,
 				FE84597B2B44508300DCB44E /* AppViewControllerWrapper.swift in Sources */,

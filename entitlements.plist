@@ -34,6 +34,8 @@
     
 	<key>com.apple.private.persona-mgmt</key>
 	<true/>
+	<key>com.apple.private.memorystatus</key>
+	<true/>
     
 	<key>com.apple.security.exception.shared-preference.read-write</key>
 	<array>

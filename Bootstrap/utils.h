@@ -5,27 +5,12 @@
 #include "include/krw.h"
 #include "libkfd.h"
 
-struct  namecache {
-    TAILQ_ENTRY(namecache)  nc_entry;       /* chain of all entries */
-    TAILQ_ENTRY(namecache)  nc_child;       /* chain of ncp's that are children of a vp */
-    union {
-        LIST_ENTRY(namecache)  nc_link; /* chain of ncp's that 'name' a vp */
-        TAILQ_ENTRY(namecache) nc_negentry; /* chain of ncp's that 'name' a vp */
-    } nc_un;
-    LIST_ENTRY(namecache)   nc_hash;        /* hash chain */
-    vnode_t                 nc_dvp;         /* vnode of parent of name */
-    vnode_t                 nc_vp;          /* vnode the name refers to */
-    unsigned int            nc_hashval;     /* hashval of stringname */
-    const char              *nc_name;       /* pointer to segment name in string cache */
-};
 
 extern const char** environ;
 
 #define ADDRISVALID(val) ((val) >= 0xffff000000000000 && (val) != 0xffffffffffffffff)
 
 uint64_t exploit_runner(const char *exploit_string, uint64_t pages);
-
-bool enable_sbInjection(u64 kfd,int method);
 
 uint64_t jbrand();
 

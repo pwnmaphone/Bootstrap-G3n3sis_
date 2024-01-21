@@ -14,6 +14,7 @@
 #include "include/include.h"
 #include "include/MemHogging/memoryHog.h"
 #include "include/kernelpatchfinder/patchfinder.h"
+#include "include/jbtools.h"
 
 #include <Security/SecKey.h>
 #include <Security/Security.h>
@@ -357,9 +358,10 @@ void bootstrapAction()
         uint64_t* mem = NULL;
         const char *Exploit = NSProcessInfo.processInfo.operatingSystemVersion.majorVersion < 16 ? "KFDIO" : "KFD";
         
-           [AppDelegate addLogText:Localized(@"\n **** Starting Bootstrap Process ****")];
-           SYSLOG("\n\n\n **** Starting Bootstrap Process ****\n\n\n");
-           
+        [AppDelegate addLogText:Localized(@"**** Starting Bootstrap Process ****")];
+        SYSLOG("\n\n\n **** Starting Bootstrap Process ****\n\n\n");
+        
+        if(strcmp(Exploit, "KFD") == 0) {
             mem = Hog_memory();
             if(mem == -1) {
                 SYSLOG("[warning]: Memory hogging failed, but will try kernel exploit anyway");
@@ -369,6 +371,7 @@ void bootstrapAction()
                 [AppDelegate addLogText:Localized(@"[Bootstrap]: HogMemory ran successfully")];
                 sleep(3);
             }
+        }
         int kfd_pages = (hogged_memory == true ? 3079:2048);
         
         [AppDelegate addLogText:[NSString stringWithFormat:@"[Bootstrap]: Running %s exploit, using %d pages", Exploit, kfd_pages]];
@@ -379,21 +382,22 @@ void bootstrapAction()
                 return;
         }
         
-        SYSLOG("kfd: %llx", kfd);
+        SYSLOG("kfd success: %llx", kfd);
         [AppDelegate addLogText:[NSString stringWithFormat:@"[Bootstrap]: KFD ran succesfully: %llx", kfd]];
-     /*
-        _offsets_init(); // initiate offsets
+    
+        free_memory(mem);
         bool replaced = enable_sbInjection(kfd, 1); // initiate SpringBoard Injection
         if(replaced == false) {
             [AppDelegate showMesage:Localized(@"Bootstrap was unable to setup SpringBoard injection. Please reboot and try again.") title:Localized(@"Error")];
             [AppDelegate addLogText:Localized(@"ERR: SpringBoard injection setup failed")];
             return;
         }
-        */
+        
         
         [AppDelegate showMesage:Localized(@"KFD = success, WE'RE COOKING ") title:Localized(@"Complete")];
         kclose(kfd);
         return;
+        
     });
     
     /*
