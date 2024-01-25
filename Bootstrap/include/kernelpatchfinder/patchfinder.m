@@ -58,11 +58,11 @@ int do_patchfinder(uint64_t kfd, uint64_t kernel_base) {
     if(did_patchfinder) {
         return 0;
     } else if(!ADDRISVALID(kernel_base) || !ADDRISVALID(kfd)) {
-        SYSLOG("ERR: one or more addresses given are invalid!");
+        SYSLOG("[PF] ERR: one or more addresses given are invalid!");
         return -1;
     }
     
-    SYSLOG("Starting Patchfinder");
+    SYSLOG("[PF] Starting Patchfinder");
     uint64_t kslide = kernel_base - 0xFFFFFFF007004000;
     
     set_kfd(kfd);
@@ -72,47 +72,47 @@ int do_patchfinder(uint64_t kfd, uint64_t kernel_base) {
     k = pfinder_init(&pfinder);
     
     if(k != KERN_SUCCESS) {
-        SYSLOG("ERR: Patchfinder was unable to initialize corectly");
+        SYSLOG("[PF] ERR: Patchfinder was unable to initialize corectly");
         goto kpffailed;
     }
     
-    SYSLOG("Patchfinder initiated");
+    SYSLOG("[PF] Patchfinder initiated");
     
     uint64_t cdevsw = pfinder_cdevsw(pfinder);
     if(cdevsw) off_cdevsw = cdevsw - kslide;
-    SYSLOG("cdevsw: 0x%llx\n", off_cdevsw);
+    SYSLOG("[PF] cdevsw: 0x%llx\n", off_cdevsw);
     
     uint64_t gPhysBase = pfinder_gPhysBase(pfinder);
     if(gPhysBase) off_gPhysBase = gPhysBase - kslide;
-    SYSLOG("gPhysBase: 0x%llx\n", off_gPhysBase);
+    SYSLOG("[PF] gPhysBase: 0x%llx\n", off_gPhysBase);
     
     uint64_t gPhysSize = pfinder_gPhysSize(pfinder);
     if(gPhysSize) off_gPhysSize = gPhysSize - kslide;
-    SYSLOG("gPhysSize: 0x%llx\n", off_gPhysSize);
+    SYSLOG("[PF] gPhysSize: 0x%llx\n", off_gPhysSize);
     
     uint64_t gVirtBase = pfinder_gVirtBase(pfinder);
     if(gVirtBase) off_gVirtBase = gVirtBase - kslide;
-    SYSLOG("gVirtBase: 0x%llx\n", off_gVirtBase);
+    SYSLOG("[PF] gVirtBase: 0x%llx\n", off_gVirtBase);
     
     uint64_t perfmon_dev_open = pfinder_perfmon_dev_open(pfinder);
     if(perfmon_dev_open) off_perfmon_dev_open = perfmon_dev_open - kslide;
-    SYSLOG("perfmon_dev_open: 0x%llx\n", off_perfmon_dev_open);
+    SYSLOG("[PF] perfmon_dev_open: 0x%llx\n", off_perfmon_dev_open);
     
     uint64_t perfmon_devices = pfinder_perfmon_devices(pfinder);
     if(perfmon_devices) off_perfmon_devices = perfmon_devices - kslide;
-    SYSLOG("perfmon_devices: 0x%llx\n", off_perfmon_devices);
+    SYSLOG("[PF] perfmon_devices: 0x%llx\n", off_perfmon_devices);
     
     uint64_t ptov_table = pfinder_ptov_table(pfinder);
     if(ptov_table) off_ptov_table = ptov_table - kslide;
-    SYSLOG("ptov_table: 0x%llx\n", off_ptov_table);
+    SYSLOG("[PF] ptov_table: 0x%llx\n", off_ptov_table);
     
     uint64_t vn_kqfilter = pfinder_vn_kqfilter(pfinder);
     if(vn_kqfilter) off_vn_kqfilter = vn_kqfilter - kslide;
-    SYSLOG("vn_kqfilter: 0x%llx\n", off_vn_kqfilter);
+    SYSLOG("[PF] vn_kqfilter: 0x%llx\n", off_vn_kqfilter);
     
     uint64_t proc_object_size = pfinder_proc_object_size(pfinder);
     if(proc_object_size) off_proc_object_size = proc_object_size;
-    SYSLOG("proc_object_size: 0x%llx\n", off_proc_object_size);
+    SYSLOG("[PF] proc_object_size: 0x%llx\n", off_proc_object_size);
     
     pfinder_term(&pfinder);
     did_patchfinder = true;

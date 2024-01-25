@@ -6,10 +6,22 @@
 //
 
 #import <Foundation/Foundation.h>
+#include "../bootstrap.h"
 #include "jbtools.h"
 
+int file_index;
 
 // vnode functions and more
+
+uint64_t unsign_kptr(uint64_t pac_kaddr) {
+    if ((pac_kaddr & 0xFFFFFF0000000000) == 0xFFFFFF0000000000) {
+        return pac_kaddr;
+    }
+    if(t1sz_boot != 0) {
+        return pac_kaddr |= ~((1ULL << (64U - t1sz_boot)) - 1U);
+    }
+    return pac_kaddr;
+}
 
 uint64_t getProc(pid_t pid) {
     uint64_t proc = get_kernproc();
@@ -76,17 +88,31 @@ uint64_t getVnodeAtPathByChdir(char *path) {
 bool enable_sbInjection(u64 kfd,int method) {
     
     SYSLOG("[SB Injection] enabling SB Injection..");
-
+    
+    /* location variables */
     _offsets_init(); // initiate offsets
     init_krw(kfd);
     int fd;
-    int fd2;                            // this sorta looks like a super car... like Thrust SSC...
-    kern_return_t kr;
+    int fd2;
+    struct vnode rootvnode = {0};
+    struct vnode lcdfilevnode = {0};
+    struct vnode flcdfilevnode = {0}; // fake
+    struct vnode xpcfilevnode = {0};
+    struct vnode fxpcfilevnode = {0}; // fake
+    struct namecache nc = {0};
+    struct kfd essential;
+    u64 selfproc = 0;
+    u64 launchvnode = 0;
+    
+    /* file handling & location variables */
+    kern_return_t kr;                                // this sorta looks like a super car... like Thrust SSC...
+    NSError* err;
     NSFileManager *FM = [NSFileManager defaultManager];
+    const char *Bootstrap_patchloc = (find_jbroot()).UTF8String + *"/BSTRPFiles";
     const char *xpc_origlocation = "/usr/libexec/xpcproxy";
-    const char *xpc_new_location = "/var/mobile/xpcproxy"; // TODO: Make this modified xpc, include it in this project, move it to this location
+    const char *xpc_new_location = Bootstrap_patchloc + *"/xpcproxy"; // TODO:
     const char *lcd_origlocation = "/sbin/launchd";
-    const char *Bootstrap_patchloc = "/var/mobile/Documents/BSTRPFiles";
+    const char *new_lcd_location = Bootstrap_patchloc + *"/launchd";
     
     if([FM fileExistsAtPath:@"/var/mobile/Documents/BSTRPFiles/xpcproxy"] || [FM fileExistsAtPath:@"/var/mobile/Documents/BSTRPFiles/launchd"]) {
         SYSLOG("[SB Injection] patched versions of xpc and/or launchd exists, just gonna resign them");
@@ -107,7 +133,7 @@ bool enable_sbInjection(u64 kfd,int method) {
     
     SYSLOG("[SB Injection] executing launchd patch");
     
-    uint64_t launchvnode = getVnodeAtPath(lcd_origlocation);
+    launchvnode = getVnodeAtPath(lcd_origlocation);
     if(!ADDRISVALID(launchvnode)) {
         SYSLOG("[SB Injection] ERR: unable to get launchd vnode");
         return false;
@@ -123,112 +149,167 @@ bool enable_sbInjection(u64 kfd,int method) {
     
     if(running_IO == false) { // running_IO = true = device on ios 15
         
-        // modify namecache - TODO
-        SYSLOG("[SB Injection] modifying namecache (iOS 16)");
+    // setting up the u64 locations with structs
+    SYSLOG("[SB Injection] modifying namecache (iOS 16)");
+    kreadbuf(launchvnode, &lcdfilevnode, sizeof(lcdfilevnode)) ;
+    kwrite32(launchvnode+off_vnode_v_usecount, lcdfilevnode.v_usecount+1);
+    u64 replace_lcd = getVnodeAtPath(new_lcd_location);
+    if(ADDRISVALID (replace_lcd)) {
+        SYSLOG("[SB Injection] ERR: Unable to get fake launchd vnode");
+        goto failure;
+    }
         
-        /*
-         \
-         \
-         \
-         */
+    kreadbuf(replace_lcd, &flcdfilevnode, sizeof(flcdfilevnode));
+    kwrite32(replace_lcd+off_vnode_v_usecount, flcdfilevnode.v_usecount+1);
+    
+    SYSLOG("[SB Injection] launchd: %11x, fake launchd: %11x", lcdfilevnode, flcdfilevnode);
         
+    // 1) get launchd namecache
+        
+    u64 launchnc = kread64(launchvnode + off_vnode_v_ncchildren_tqh_first);
+    kreadbuf(launchnc, &nc, sizeof(nc));
+    
+    if(strcmp(nc.nc_name, "launchd") != 0) {
+        SYSLOG("[SB Injection] ERR: We don't have the correct namecache!");
+        goto failure;
+    }
+        
+    // 2) find & replace launchd's node with the fakes
+        
+    u64 lcdncvp = (u64)nc.nc_vp;
+    if(!ADDRISVALID(lcdncvp)) {
+        lcdncvp = kread64(launchnc + off_namecache_nc_vp);
+        if(ADDRISVALID(lcdncvp)) {
+            SYSLOG("[SB Injection] ERR: unable to grab launchd nc vnode");
+            goto failure;
+        }
+    }
+        
+    SYSLOG("[SB Injection] replacing namecache vnode pointer");
+    kwrite64(lcdncvp, replace_lcd);
+    SYSLOG("[SB Injection] launched namecache node pointer replaced with fake vnode!");
+            
 resignL1:;
-        SYSLOG("[SB Injection] signing launchd (iOS 16)");
-        
-        /*
-         \
-         \
-         \
-         */
-        
-        return true;
-        
+    SYSLOG("[SB Injection] signing launchd (iOS 16)");
+    rebuildSignature(@(new_lcd_location));
+    SYSLOG("[SB Injection] fake launchd has been signed! (iOS 16)");
+    return true;
+            
     } else {goto ios15;}
-    
-    
-    
+        
+        
+        
 ios15:;
     SYSLOG("[SB Injection] changing NSExecutablePath (iOS 15)");
-    
+        
     /*
-     \
-     \
-     \
-     */
-    
-    
+    \
+    \
+    \
+    */
+        
+        
 resignL2:;
     SYSLOG("[SB Injection] signing launchd (iOS 15)");
-    
-    /*
-     \
-     \
-     \
-     */
+        
+    rebuildSignature(@(new_lcd_location));
+    SYSLOG("[SB Injection] fake launchd has been signed! (iOS 15)");
     return true;
-    
-    
-xpc:;
-    
+        
+        
+xpc:; // xpc method *should* work on ios 15 & 16
+        
     SYSLOG("[SB Injection] executing xpcproxy patch");
-    
+        
     fd = open(xpc_origlocation, O_RDONLY);
     if(fd == -1) {
         SYSLOG("ERR: Unable to open xpcproxy");
-        return false;
+        goto failure;
     }
     SYSLOG("fd returned: %d", fd);
-    
+        
     off_t xpcfile_size = lseek(fd, 0, SEEK_END);
     SYSLOG("xpcfile_size: %llx", xpcfile_size);
-    if(xpcfile_size <= 0 ) { return false; }
-    
-    // move fake xpcproxy to Bootstrap files location
-    
-    /*
-     \
-     \
-     \
-     */
-    
+    if(xpcfile_size <= 0 ) { goto failure; }
+        
     /* Ensure fake xpcproxy exists before continuing */
-    if(![FM fileExistsAtPath:@"/var/mobile/Documents/BSTRPFiles/xpcproxy"]) {
+    if(![FM fileExistsAtPath:@(Bootstrap_patchloc)]) {
         SYSLOG("ERR: Fake xpcproxy is not in the right location");
-        return false;
+        goto failure;
     }
     fd2 = open(xpc_new_location, O_RDONLY);
     if(fd2 == -1) {
         SYSLOG("ERR: Unable to open fake xpcproxy");
-        return false;
+        goto failure;
     }
     SYSLOG("fd2 returned: %d", fd2);
     off_t xpcfake_size = lseek(fd2, 0, SEEK_END);
     SYSLOG("xpcfile_size: %llx", xpcfile_size);
-    if(xpcfake_size <= 0 ) { return false; }
+    if(xpcfake_size <= 0 ) { goto failure; }
+
+    selfproc = essential.info.kernel.current_proc;
+    if(!ADDRISVALID(selfproc)) {
+        selfproc = getProc(getpid());
+        if(!ADDRISVALID(selfproc)) {
+            SYSLOG("[SB Injection] ERR: unable to get self proc");
+            goto failure;
+        }
+    }
     
-    // swap vnodes - TODO
+    u64 filedesc_pac = kread64(selfproc + off_p_pfd);
+    u64 filedesc = unsign_kptr(filedesc_pac);
+    u64 xpcfile = kread64(filedesc + (8 * fd));
+    u64 fglob_pac = kread64(xpcfile + off_fp_glob);
+    u64 fglob = unsign_kptr(fglob_pac);
+    u64 xpcvnode_pac = kread64(fglob + off_fg_data);
+    u64 xpcvnode = unsign_kptr(xpcvnode_pac);
+    
+    kreadbuf(xpcvnode, &xpcfilevnode, sizeof(xpcfilevnode));
+    
+    u64 launchd_proc = getProc(1);
+    u64 textvp_pac = kread64(launchd_proc + off_p_textvp);
+    u64 textvp = unsign_kptr(textvp_pac);
+    u64 sbin_vnode = unsign_kptr(kread64(textvp + off_vnode_v_parent));
+    u64 root_vnode = unsign_kptr(kread64(sbin_vnode + off_vnode_v_parent));
+    if(!ADDRISVALID(root_vnode)) {
+        SYSLOG("[SB Injection] ERR: unable to get rootvnode");
+        goto failure;
+    }
+    
+    kreadbuf(root_vnode, &rootvnode, sizeof(rootvnode));
+    SYSLOG("[SB Injection] got rootvnode at: %llx", root_vnode);
+    
+    // REST IS TODO: remove RD_ONLY from root_vnode, map files and overwrite the orig xpcproxy
     
     /*
-     \
-     \
-     \
-     */
-    
+    /
+    /
+    /
+    /
+    /
+    */
+
 resignX:;
-    
+        
     SYSLOG("[SB Injection] Signing xpcproxy");
-    
-    /*
-     \
-     \
-     \
-     */
-    
+    rebuildSignature(@(xpc_new_location));
+        
     if(fd && fd2 != 0) {
         close(fd);
         close(fd2);
     }
     
+    SYSLOG("[SB Injection] fake xpcproxy has been signed!");
     return true;
+        
+failure:;
+    if(fd != 0) close(fd);
+    if(fd2 != 0) close(fd2);
+    if(file_index != 0) close(file_index);
+    if([FM fileExistsAtPath:@(Bootstrap_patchloc) isDirectory:YES]) {
+        remove(xpc_new_location);
+        remove(new_lcd_location);
+        remove(Bootstrap_patchloc);
+    }
+    return false;
 }
-

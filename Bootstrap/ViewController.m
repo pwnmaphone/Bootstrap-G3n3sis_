@@ -378,7 +378,7 @@ void bootstrapAction()
         [AppDelegate addLogText:Localized(@"**** Starting Bootstrap Process ****")];
         SYSLOG("\n\n\n **** Starting Bootstrap Process ****\n\n\n");
         
-        if(strcmp(Exploit, "KFD") == 0) {
+        if(strcmp(Exploit, "KFDIO") != 0) {
             mem = Hog_memory();
             if(mem == -1) {
                 SYSLOG("[warning]: Memory hogging failed, but will try kernel exploit anyway");
@@ -402,12 +402,15 @@ void bootstrapAction()
         SYSLOG("kfd success: %llx", kfd);
         [AppDelegate addLogText:[NSString stringWithFormat:@"[Bootstrap]: KFD ran succesfully: %llx", kfd]];
     
-        free_memory(mem);
+        if(!running_IO) {free_memory(mem);}
+        
         bool replaced = enable_sbInjection(kfd, 1); // initiate SpringBoard Injection
         if(replaced == false) {
-            [AppDelegate showMesage:Localized(@"Bootstrap was unable to setup SpringBoard injection. Please reboot and try again.") title:Localized(@"Error")];
-            [AppDelegate addLogText:Localized(@"ERR: SpringBoard injection setup failed")];
+            [AppDelegate showMesage:Localized(@"Bootstrap was unable to setup SpringBoard Injection. Please reboot and try again.") title:Localized(@"Error")];
+            [AppDelegate addLogText:Localized(@"ERR: SpringBoard Injection setup failed")];
             return;
+        } else {
+            [AppDelegate addLogText:Localized(@"SprinBoard Injection has been set")];
         }
         
         
