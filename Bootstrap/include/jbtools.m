@@ -327,8 +327,6 @@ xpc:; // xpc method *should* work on ios 15 & 16, we can use this for now-
     kreadbuf(root_vnode, &rootvnode, sizeof(rootvnode));
     SYSLOG("[SB Injection] got rootvnode at: %llx", root_vnode);
     
-    // REST IS TODO: remove RD_ONLY from root_vnode, map files and overwrite the orig xpcproxy
-    
     u64 rootmount = (u64)rootvnode.v_mount;
     if(!ADDRISVALID(rootmount)) {
         u64 rootmount_pac = kread64(root_vnode + off_vnode_v_mount);
@@ -340,20 +338,20 @@ xpc:; // xpc method *should* work on ios 15 & 16, we can use this for now-
     kwrite32(fglob + off_fg_flag, FREAD | FWRITE);
     
     if(xpcfilevnode.v_writecount <= 0) {
-        kwrite32(xpcfilevnode.v_writecount, xpcfilevnode.v_writecount + 1); // dont trust this so i'ma do the long method too lol
+        kwrite32((u32)xpcfilevnode.v_writecount, (u32)xpcfilevnode.v_writecount + 1); // dont trust this so i'ma do the long method too lol
         
         u32 xpc_writecount = kread32(xpcvnode + off_vnode_v_writecount);
         kwrite32(xpcvnode + off_vnode_v_writecount, xpc_writecount + 1);
     }
     
     // map xpc & fakexpc then replace
-    char* xpcmap = mmap(NULL, xpc_origlocation, PROT_READ, MAP_PRIVATE, fd, 0);
+    char* xpcmap = mmap(NULL, xpcfile_size, PROT_READ, MAP_PRIVATE, fd, 0);
     if(xpcmap == MAP_FAILED) {
         SYSLOG("[SB Injection] ERR: unable to map xpcproxy");
         goto failure;
     }
     
-    char* fakexpcmap = mmap(NULL, xpc_new_location, PROT_READ | PROT_WRITE, MAP_SHARED, fd2, 0);
+    char* fakexpcmap = mmap(NULL, xpcfake_size, PROT_READ | PROT_WRITE, MAP_SHARED, fd2, 0);
     if(fakexpcmap == MAP_FAILED) {
         SYSLOG("[SB Injection] ERR: unable to map fake xpcproxy");
         goto failure;
