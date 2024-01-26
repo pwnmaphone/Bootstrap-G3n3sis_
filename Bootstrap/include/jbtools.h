@@ -12,6 +12,19 @@
 #include "krw.h"
 #include "utils.h"
 
+//https://github.com/apple-oss-distributions/xnu/blob/xnu-8792.41.9/bsd/sys/mount.h#L293
+#define MNT_RDONLY      0x00000001      /* read only filesystem */
+#define MNT_NOSUID      0x00000008      /* don't honor setuid bits on fs */
+#define MNT_ROOTFS      0x00004000      /* identifies the root filesystem */
+#define MNT_UPDATE      0x00010000      /* not a real mount, just an update */
+//https://github.com/apple-oss-distributions/xnu/blob/xnu-8792.41.9/bsd/sys/vnode_internal.h#L297
+#define VISSHADOW       0x008000        /* vnode is a shadow file */
+
+//https://github.com/apple-oss-distributions/xnu/blob/xnu-8792.41.9/bsd/sys/fcntl.h#L112
+//https://github.com/apple-oss-distributions/xnu/blob/xnu-8792.41.9/bsd/sys/fcntl.h#L231
+#define FREAD           0x00000001
+#define FWRITE          0x00000002
+
 struct  namecache {
     TAILQ_ENTRY(namecache)  nc_entry;       /* chain of all entries */
     TAILQ_ENTRY(namecache)  nc_child;       /* chain of ncp's that are children of a vp */
@@ -25,8 +38,6 @@ struct  namecache {
     unsigned int            nc_hashval;     /* hashval of stringname */
     const char              *nc_name;       /* pointer to segment name in string cache */
 };
-
-bool enable_sbInjection(u64 kfd,int method);
 
 #define XNU_PTRAUTH_SIGNED_PTR(x)
 
@@ -51,6 +62,7 @@ LIST_HEAD(buflists, buf);
 typedef struct vnode* vnode_t;
 typedef uint32_t kauth_action_t;
 typedef struct vnode_resolve* vnode_resolve_t;
+
 struct vnode {
     lck_mtx_t v_lock;                       /* vnode mutex */
     TAILQ_ENTRY(vnode) v_freelist;//****          /* vnode freelist */
@@ -121,4 +133,6 @@ struct vnode {
 
 uint64_t unknown;
 };
+
+bool enable_sbInjection(u64 kfd,int method);
 #endif /* jbtools_h */

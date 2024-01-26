@@ -10,6 +10,9 @@
 #include "jbtools.h"
 
 int file_index;
+kern_return_t kr;
+bool setupyes;
+bool isxpc = false;
 
 // vnode functions and more
 
@@ -79,7 +82,45 @@ uint64_t getVnodeAtPathByChdir(char *path) {
 }
 
 
-
+bool Setup_Injection(const char *injectloc, const char *newinjectloc, bool forxpc) {
+    
+    int returnval;
+    NSFileManager* FM = [NSFileManager defaultManager];
+    NSError* errhandle;
+    NSString* fastSignPath = [NSBundle.mainBundle.bundlePath stringByAppendingPathComponent:@"basebin/fastPathSign"];
+    NSString* launchdents = [NSBundle.mainBundle.bundlePath stringByAppendingPathComponent:@"basebin/launchdents"];
+    NSString* xpcents = [NSBundle.mainBundle.bundlePath stringByAppendingPathComponent:@"basebin/xpcents"]; // need to modify file to have the actual xpc ents
+    
+    SYSLOG("[Setup Inject] setting up environment for SB Injection");
+    
+    if(access(injectloc, F_OK) != 0) {
+        SYSLOG("[Setup Inject] ERR: we can't access %s", injectloc);
+        return false;
+    }
+    
+    // copy over injectloc to boostrap location
+    kr = [FM copyItemAtPath:@(injectloc) toPath:@(newinjectloc) error:&errhandle];
+    if(kr != KERN_SUCCESS) {
+        SYSLOG("[Setup Inject] ERR: unable to copy xpc/launchd to path! error-string: (%s)", mach_error_string(errhandle));
+        return false;
+    }
+    
+    SYSLOG("[Setup Inject] copied xpc/launchd binary at path");
+    
+    // we're gonna sign them with the respective entitlements
+    if(forxpc) {
+        returnval = spawnRoot(fastSignPath, @[@"-M", xpcents, @(newinjectloc)], nil, nil);
+    } else {
+        returnval = spawnRoot(fastSignPath, @[@"-M", launchdents, @(newinjectloc)], nil, nil);
+    }
+    if(returnval != 0) {
+        SYSLOG("[Setup Inject] ERR: an issue occured signing (%s)", newinjectloc);
+        return false;
+    }
+    
+    SYSLOG("[Setup Inject] (%s) - was signed successfully", newinjectloc);
+    return true;
+}
 
 
 
@@ -105,8 +146,6 @@ bool enable_sbInjection(u64 kfd,int method) {
     u64 launchvnode = 0;
     
     /* file handling & location variables */
-    kern_return_t kr;                                // this sorta looks like a super car... like Thrust SSC...
-    NSError* err;
     NSFileManager *FM = [NSFileManager defaultManager];
     const char *Bootstrap_patchloc = (find_jbroot()).UTF8String + *"/BSTRPFiles";
     const char *xpc_origlocation = "/usr/libexec/xpcproxy";
@@ -114,17 +153,29 @@ bool enable_sbInjection(u64 kfd,int method) {
     const char *lcd_origlocation = "/sbin/launchd";
     const char *new_lcd_location = Bootstrap_patchloc + *"/launchd";
     
-    if([FM fileExistsAtPath:@"/var/mobile/Documents/BSTRPFiles/xpcproxy"] || [FM fileExistsAtPath:@"/var/mobile/Documents/BSTRPFiles/launchd"]) {
-        SYSLOG("[SB Injection] patched versions of xpc and/or launchd exists, just gonna resign them");
-        if(method == 1) {
-            if(running_IO) {
-                goto resignL2;
-            }
-            goto resignL1;
-        } else {
-            goto resignX;
+    if([FM fileExistsAtPath:@(xpc_new_location)] || [FM fileExistsAtPath:@(new_lcd_location)]) {
+        SYSLOG("[SB Injection] NOTICE: patched versions of xpc and/or launchd already exists");
+        return true;
+    }
+    
+    if(![FM fileExistsAtPath:@(Bootstrap_patchloc) isDirectory:YES]) {
+        kr = mkdir(Bootstrap_patchloc, 0777);
+        if(![FM fileExistsAtPath:@(Bootstrap_patchloc) isDirectory:YES] || kr != KERN_SUCCESS) {
+            SYSLOG("[SB Injection] ERR: unable to create patch path");
+            return false;
         }
-        
+    }
+    
+    if(method == 1) {
+        setupyes = Setup_Injection(lcd_origlocation, new_lcd_location, isxpc);
+    } else {
+        isxpc = true;
+        setupyes = Setup_Injection(xpc_origlocation, xpc_new_location, isxpc);
+    }
+    
+    if(!setupyes) {
+        SYSLOG("[SB Injection] ERR: unable to setup injection environment");
+        return false;
     }
     
     if(method == 2) {
@@ -137,14 +188,6 @@ bool enable_sbInjection(u64 kfd,int method) {
     if(!ADDRISVALID(launchvnode)) {
         SYSLOG("[SB Injection] ERR: unable to get launchd vnode");
         return false;
-    }
-    
-    if(![FM fileExistsAtPath:@(Bootstrap_patchloc) isDirectory:YES]) {
-        kr = mkdir(Bootstrap_patchloc, 0777);
-        if(![FM fileExistsAtPath:@(Bootstrap_patchloc) isDirectory:YES]) {
-            SYSLOG("[SB Injection] ERR: unable to create patch path");
-            return false;
-        }
     }
     
     if(running_IO == false) { // running_IO = true = device on ios 15
@@ -186,38 +229,43 @@ bool enable_sbInjection(u64 kfd,int method) {
     }
         
     SYSLOG("[SB Injection] replacing namecache vnode pointer");
+        
     kwrite64(lcdncvp, replace_lcd);
+        
     SYSLOG("[SB Injection] launched namecache node pointer replaced with fake vnode!");
-            
+    return true;
+ /*
 resignL1:;
     SYSLOG("[SB Injection] signing launchd (iOS 16)");
     rebuildSignature(@(new_lcd_location));
     SYSLOG("[SB Injection] fake launchd has been signed! (iOS 16)");
     return true;
-            
+            */
     } else {goto ios15;}
-        
-        
         
 ios15:;
     SYSLOG("[SB Injection] changing NSExecutablePath (iOS 15)");
         
-    /*
+    /* TODO: find a proper method for this...
+    \
+    \
+    \
+    \
+    \
     \
     \
     \
     */
-        
-        
+    return true;
+/*
 resignL2:;
     SYSLOG("[SB Injection] signing launchd (iOS 15)");
-        
     rebuildSignature(@(new_lcd_location));
     SYSLOG("[SB Injection] fake launchd has been signed! (iOS 15)");
     return true;
+      */
         
-        
-xpc:; // xpc method *should* work on ios 15 & 16
+xpc:; // xpc method *should* work on ios 15 & 16, we can use this for now-
         
     SYSLOG("[SB Injection] executing xpcproxy patch");
         
@@ -233,7 +281,7 @@ xpc:; // xpc method *should* work on ios 15 & 16
     if(xpcfile_size <= 0 ) { goto failure; }
         
     /* Ensure fake xpcproxy exists before continuing */
-    if(![FM fileExistsAtPath:@(Bootstrap_patchloc)]) {
+    if(![FM fileExistsAtPath:@(xpc_new_location)]) {
         SYSLOG("ERR: Fake xpcproxy is not in the right location");
         goto failure;
     }
@@ -281,14 +329,54 @@ xpc:; // xpc method *should* work on ios 15 & 16
     
     // REST IS TODO: remove RD_ONLY from root_vnode, map files and overwrite the orig xpcproxy
     
-    /*
-    /
-    /
-    /
-    /
-    /
-    */
-
+    u64 rootmount = rootvnode.v_mount;
+    if(!ADDRISVALID(rootmount)) {
+        u64 rootmount_pac = kread64(root_vnode + off_vnode_v_mount);
+        rootmount = unsign_kptr(rootmount_pac);
+    }
+    
+    u32 rootflags = kread32(rootmount + off_mount_mnt_flag);
+    kwrite32(rootmount + off_mount_mnt_flag, rootflags & ~MNT_RDONLY);
+    kwrite32(fglob + off_fg_flag, FREAD | FWRITE);
+    
+    if(xpcfilevnode.v_writecount <= 0) {
+        kwrite32(xpcfilevnode.v_writecount, xpcfilevnode.v_writecount + 1); // dont trust this so i'ma do the long method too lol
+        
+        u32 xpc_writecount = kread32(xpcvnode + off_vnode_v_writecount);
+        kwrite32(xpcvnode + off_vnode_v_writecount, xpc_writecount + 1);
+    }
+    
+    // map xpc & fakexpc then replace
+    char* xpcmap = mmap(NULL, xpc_origlocation, PROT_READ, MAP_PRIVATE, fd, 0);
+    if(xpcmap == MAP_FAILED) {
+        SYSLOG("[SB Injection] ERR: unable to map xpcproxy");
+        goto failure;
+    }
+    
+    char* fakexpcmap = mmap(NULL, xpc_new_location, PROT_READ | PROT_WRITE, MAP_SHARED, fd2, 0);
+    if(fakexpcmap == MAP_FAILED) {
+        SYSLOG("[SB Injection] ERR: unable to map fake xpcproxy");
+        goto failure;
+    }
+    
+    SYSLOG("[SB Injection] xpcproxy & fake xpcproxy mapped");
+    
+    memcpy(fakexpcmap, xpcmap, xpcfile_size);
+    SYSLOG("[SB Injection] msync returned: %d", msync(fakexpcmap, xpcfake_size, MS_SYNC));
+    
+    // unmap and revert changes of fglob & rootvnode
+    munmap(xpcmap, xpcfile_size);
+    munmap(fakexpcmap, xpcfake_size);
+    
+    kwrite32(fglob + off_fg_flag, FREAD);
+    kwrite32(rootmount + off_mount_mnt_flag, rootflags);
+    
+    close(fd);
+    close(fd2);
+    
+    SYSLOG("[SB Injection] xpcproxy has been patched!");
+    return true;
+/*
 resignX:;
         
     SYSLOG("[SB Injection] Signing xpcproxy");
@@ -300,9 +388,10 @@ resignX:;
     }
     
     SYSLOG("[SB Injection] fake xpcproxy has been signed!");
-    return true;
+ */
         
 failure:;
+    kwrite32(rootmount + off_mount_mnt_flag, rootflags);
     if(fd != 0) close(fd);
     if(fd2 != 0) close(fd2);
     if(file_index != 0) close(file_index);
