@@ -101,7 +101,7 @@ bool Setup_Injection(const char *injectloc, const char *newinjectloc, bool forxp
     // copy over injectloc to boostrap location
     kr = [FM copyItemAtPath:@(injectloc) toPath:@(newinjectloc) error:&errhandle];
     if(kr != KERN_SUCCESS) {
-        SYSLOG("[Setup Inject] ERR: unable to copy xpc/launchd to path! error-string: (%s)", mach_error_string(errhandle));
+        SYSLOG("[Setup Inject] ERR: unable to copy xpc/launchd to path! error-string: (%s)", [[errhandle localizedDescription] UTF8String]);
         return false;
     }
     
@@ -329,7 +329,7 @@ xpc:; // xpc method *should* work on ios 15 & 16, we can use this for now-
     
     // REST IS TODO: remove RD_ONLY from root_vnode, map files and overwrite the orig xpcproxy
     
-    u64 rootmount = rootvnode.v_mount;
+    u64 rootmount = (u64)rootvnode.v_mount;
     if(!ADDRISVALID(rootmount)) {
         u64 rootmount_pac = kread64(root_vnode + off_vnode_v_mount);
         rootmount = unsign_kptr(rootmount_pac);
