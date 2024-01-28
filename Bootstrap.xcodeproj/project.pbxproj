@@ -53,7 +53,7 @@
 		AD11E94E2B57A19400529403 /* include.m in Sources */ = {isa = PBXBuildFile; fileRef = AD11E94A2B57A19300529403 /* include.m */; };
 		AD11E94F2B57A19400529403 /* krw.m in Sources */ = {isa = PBXBuildFile; fileRef = AD11E94C2B57A19400529403 /* krw.m */; };
 		AD7A8C502B5CB2F000AD45DA /* sbinject.m in Sources */ = {isa = PBXBuildFile; fileRef = AD7A8C4F2B5CB2F000AD45DA /* sbinject.m */; };
-		AD7A8CEB2B65D7F000AD45DA /* libchoma.dylib in Frameworks */ = {isa = PBXBuildFile; fileRef = AD7A8CEA2B65D7F000AD45DA /* libchoma.dylib */; };
+		AD7A8D4C2B662E0000AD45DA /* libchoma.a in Frameworks */ = {isa = PBXBuildFile; fileRef = AD7A8D4B2B662E0000AD45DA /* libchoma.a */; };
 		ADD874852B58AF01004B5AF3 /* IOSurface_shared.c in Sources */ = {isa = PBXBuildFile; fileRef = ADD874832B58AF01004B5AF3 /* IOSurface_shared.c */; };
 		ADD874882B58AF0B004B5AF3 /* kwrite_IOSurface.c in Sources */ = {isa = PBXBuildFile; fileRef = ADD874862B58AF0B004B5AF3 /* kwrite_IOSurface.c */; };
 		ADD8748B2B591190004B5AF3 /* kread_IOSurface.c in Sources */ = {isa = PBXBuildFile; fileRef = ADD8748A2B591190004B5AF3 /* kread_IOSurface.c */; };
@@ -200,7 +200,7 @@
 		AD7A8CE72B65D7E300AD45DA /* FAT.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = FAT.h; sourceTree = "<group>"; };
 		AD7A8CE82B65D7E300AD45DA /* BufferedStream.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = BufferedStream.h; sourceTree = "<group>"; };
 		AD7A8CE92B65D7E300AD45DA /* PatchFinder.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = PatchFinder.h; sourceTree = "<group>"; };
-		AD7A8CEA2B65D7F000AD45DA /* libchoma.dylib */ = {isa = PBXFileReference; lastKnownFileType = "compiled.mach-o.dylib"; path = libchoma.dylib; sourceTree = "<group>"; };
+		AD7A8D4B2B662E0000AD45DA /* libchoma.a */ = {isa = PBXFileReference; lastKnownFileType = archive.ar; path = libchoma.a; sourceTree = "<group>"; };
 		ADD874832B58AF01004B5AF3 /* IOSurface_shared.c */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.c; path = IOSurface_shared.c; sourceTree = "<group>"; };
 		ADD874842B58AF01004B5AF3 /* IOSurface_shared.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = IOSurface_shared.h; sourceTree = "<group>"; };
 		ADD874862B58AF0B004B5AF3 /* kwrite_IOSurface.c */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.c; path = kwrite_IOSurface.c; sourceTree = "<group>"; };
@@ -226,9 +226,9 @@
 				FE895FF12B418FDC00A16882 /* FluidGradient in Frameworks */,
 				84438D622B2654EB00A1E407 /* MobileContainerManager.framework in Frameworks */,
 				84438D602B26546E00A1E407 /* MobileCoreServices.framework in Frameworks */,
+				AD7A8D4C2B662E0000AD45DA /* libchoma.a in Frameworks */,
 				84438D502B260F8200A1E407 /* libzstd in Frameworks */,
 				AD11E9462B57A14F00529403 /* IOKit.framework in Frameworks */,
-				AD7A8CEB2B65D7F000AD45DA /* libchoma.dylib in Frameworks */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -435,7 +435,7 @@
 		AD7A8CAB2B6566E700AD45DA /* libs */ = {
 			isa = PBXGroup;
 			children = (
-				AD7A8CEA2B65D7F000AD45DA /* libchoma.dylib */,
+				AD7A8D4B2B662E0000AD45DA /* libchoma.a */,
 			);
 			path = libs;
 			sourceTree = "<group>";
