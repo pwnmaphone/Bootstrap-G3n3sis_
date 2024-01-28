@@ -8,6 +8,7 @@
 #import <Foundation/Foundation.h>
 #include "../bootstrap.h"
 #include "sbinject.h"
+#include "optool/operations.h"
 
 int file_index;
 kern_return_t kr;
@@ -81,6 +82,44 @@ uint64_t getVnodeAtPathByChdir(char *path) {
     return fd_cdir_vp;
 }
 
+int inject_dylib_in_binary(NSString* dylibPath, NSString* binarypath) {
+    
+    NSFileManager* FM = [NSFileManager defaultManager];
+    if(![FM fileExistsAtPath:dylibPath] || ![FM fileExistsAtPath:binarypath]) {
+        SYSLOG("[Dylib Inject] ERR: invalid path for dylib/binary");
+        return -1;
+    }
+    
+    SYSLOG("[Dylib Inject] Injecting (%s) into (%s)", (dylibPath).UTF8String, binarypath.UTF8String);
+    FILE *fp = fopen(binarypath.UTF8String, "rb");
+    
+    if(!fp) {
+        SYSLOG("[Dylib Inject] ERR: unable to read binary");
+        fclose(fp);
+        return -2;
+    }
+    
+    struct thin_header mh = {0};
+    fseek(fp,0,SEEK_SET);
+    u32 magic = 0;
+    fread(&magic, sizeof(u32), 1, fp);
+    fread(&mh,sizeof(mh),1,fp);
+    rewind(fp);
+    size_t file_size = fseek(fp, 0, SEEK_END);
+    rewind(fp);
+    
+    bool injected = insertLoadEntryIntoBinary(dylibPath, (NSMutableData*)binarypath, mh, magic);
+    if(!injected) {
+        SYSLOG("[Dylib Inject] ERR: unable to inject (%s) into (%s)!", dylibPath.UTF8String, binarypath.UTF8String);
+        fclose(fp);
+        return -3;
+    }
+    
+    SYSLOG("[Dylib Inject] (%s) was injected into (%s) succesfully", dylibPath.UTF8String, binarypath.UTF8String);
+    fclose(fp);
+    return 0;
+}
+
 
 bool Setup_Injection(const char *injectloc, const char *newinjectloc, bool forxpc) {
     
@@ -115,13 +154,14 @@ bool Setup_Injection(const char *injectloc, const char *newinjectloc, bool forxp
     
     SYSLOG("[Setup Inject] copied xpc/launchd binary at path");
     
+    
 resign:;
     
     // 2) Copy over springboard.app to bootstrap path
     
     kr = [FM createDirectoryAtURL:jbroot(@"/System/Library/CoreServices/") withIntermediateDirectories:YES attributes:nil error:&errhandle];
     if(kr != KERN_SUCCESS) {
-        SYSLOG("[Setup Inject] ERR: unable to create dummy SB path");
+        SYSLOG("[Setup Inject] ERR: unable to create fake SpringBoard path");
         return false;
     }
     kr = [FM copyItemAtPath:@(SpringBoardPath) toPath:jbroot(@(SpringBoardPath)) error:&errhandle];
@@ -134,7 +174,7 @@ resign:;
     
     returnval = spawnRoot(ldidPath, @[@"-M", sbents, [jbroot(@(SpringBoardPath)) stringByAppendingPathComponent:@"SpringBoard"]], nil, nil);
     if(returnval != 0) {
-        SYSLOG("[Setup Inject] ERR: unable to sign fake SpringBoard binary");
+        SYSLOG("[Setup Inject] ERR: unable to sign fake SpringBoard binary (%d)", returnval);
         goto setupfailed;
     }
     
@@ -147,14 +187,41 @@ resign:;
         returnval = spawnRoot(ldidPath, @[@"-M", launchdents, @(newinjectloc)], nil, nil);
     }
     if(returnval != 0) {
-        SYSLOG("[Setup Inject] ERR: an issue occured signing (%s)", newinjectloc);
+        SYSLOG("[Setup Inject] ERR: an issue occured signing (%s) - (%d)", newinjectloc, returnval);
         return false;
     }
     
     SYSLOG("[Setup Inject] (%s) - was signed successfully", newinjectloc);
+    
+    // 4) inject dylibs into fake signed xpc/launchd + fake signed SpringBoard
+    
+    if(!forxpc) {
+        returnval = inject_dylib_in_binary(jbroot([NSBundle.mainBundle.bundlePath stringByAppendingPathComponent:@"include/libs/launchdhooker/launchdhooker.dylib"]), @(newinjectloc));
+        if(returnval != 0) {
+            SYSLOG("[Setup Inject] ERR: unable to inject launchdhooker into fake launchd (%d)", returnval);
+            return false;
+        }
+    } else { // TODO: Gotta create the fake xpcproxy hooker
+        returnval = inject_dylib_in_binary(jbroot([NSBundle.mainBundle.bundlePath stringByAppendingPathComponent:@"include/libs/xpchooker/xpchooker.dylib"]), @(newinjectloc));
+        if(returnval != 0) {
+            SYSLOG("[Setup Inject] ERR: unable to inject xpchooker into fake xpcproxy (%d)", returnval);
+            return false;
+        }
+    }
+    
+    SYSLOG("[Setup Inject] dylib has been injected into (%s) succesfully", injectloc);
+    
+    returnval = inject_dylib_in_binary(jbroot([NSBundle.mainBundle.bundlePath stringByAppendingPathComponent:@"include/libs/SBHooker/SBHooker.dylib"]), jbroot(@(SpringBoardPath)));
+    if(returnval != 0) {
+        SYSLOG("[Setup Inject] ERR: unable to inject SBHooker into fake SpringBoard (%d)", returnval);
+        return false;
+    }
+    
+    SYSLOG("[Setup Inject] SBHooker has been injected into the fake SpringBoard, we're done here");
     return true;
     
 setupfailed:;
+    remove(newinjectloc);
     remove(jbroot(@(SpringBoardPath)).UTF8String);
     remove(jbroot(@"/System/Library/CoreServices").UTF8String);
     return false;
@@ -168,7 +235,7 @@ bool enable_sbInjection(u64 kfd,int method) {
     
     SYSLOG("[SB Injection] enabling SB Injection..");
     
-    /* location variables */
+    /* address variables */
     _offsets_init(); // initiate offsets
     init_krw(kfd);
     int fd;
