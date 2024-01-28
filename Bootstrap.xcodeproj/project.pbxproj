@@ -52,7 +52,8 @@
 		AD11E9492B57A17B00529403 /* libkfd.m in Sources */ = {isa = PBXBuildFile; fileRef = AD11E9472B57A17B00529403 /* libkfd.m */; };
 		AD11E94E2B57A19400529403 /* include.m in Sources */ = {isa = PBXBuildFile; fileRef = AD11E94A2B57A19300529403 /* include.m */; };
 		AD11E94F2B57A19400529403 /* krw.m in Sources */ = {isa = PBXBuildFile; fileRef = AD11E94C2B57A19400529403 /* krw.m */; };
-		AD7A8C502B5CB2F000AD45DA /* jbtools.m in Sources */ = {isa = PBXBuildFile; fileRef = AD7A8C4F2B5CB2F000AD45DA /* jbtools.m */; };
+		AD7A8C502B5CB2F000AD45DA /* sbinject.m in Sources */ = {isa = PBXBuildFile; fileRef = AD7A8C4F2B5CB2F000AD45DA /* sbinject.m */; };
+		AD7A8CEB2B65D7F000AD45DA /* libchoma.dylib in Frameworks */ = {isa = PBXBuildFile; fileRef = AD7A8CEA2B65D7F000AD45DA /* libchoma.dylib */; };
 		ADD874852B58AF01004B5AF3 /* IOSurface_shared.c in Sources */ = {isa = PBXBuildFile; fileRef = ADD874832B58AF01004B5AF3 /* IOSurface_shared.c */; };
 		ADD874882B58AF0B004B5AF3 /* kwrite_IOSurface.c in Sources */ = {isa = PBXBuildFile; fileRef = ADD874862B58AF0B004B5AF3 /* kwrite_IOSurface.c */; };
 		ADD8748B2B591190004B5AF3 /* kread_IOSurface.c in Sources */ = {isa = PBXBuildFile; fileRef = ADD8748A2B591190004B5AF3 /* kread_IOSurface.c */; };
@@ -181,8 +182,25 @@
 		AD11E94B2B57A19300529403 /* krw.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = krw.h; sourceTree = "<group>"; };
 		AD11E94C2B57A19400529403 /* krw.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = krw.m; sourceTree = "<group>"; };
 		AD11E94D2B57A19400529403 /* include.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = include.h; sourceTree = "<group>"; };
-		AD7A8C4F2B5CB2F000AD45DA /* jbtools.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; path = jbtools.m; sourceTree = "<group>"; };
-		AD7A8C512B5CB2F900AD45DA /* jbtools.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = jbtools.h; sourceTree = "<group>"; };
+		AD7A8C4F2B5CB2F000AD45DA /* sbinject.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; path = sbinject.m; sourceTree = "<group>"; };
+		AD7A8C512B5CB2F900AD45DA /* sbinject.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = sbinject.h; sourceTree = "<group>"; };
+		AD7A8CDA2B65D7E300AD45DA /* MachOLoadCommand.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = MachOLoadCommand.h; sourceTree = "<group>"; };
+		AD7A8CDB2B65D7E300AD45DA /* MemoryStream.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = MemoryStream.h; sourceTree = "<group>"; };
+		AD7A8CDC2B65D7E300AD45DA /* Base64.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = Base64.h; sourceTree = "<group>"; };
+		AD7A8CDD2B65D7E300AD45DA /* Host.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = Host.h; sourceTree = "<group>"; };
+		AD7A8CDE2B65D7E300AD45DA /* SignOSSL.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = SignOSSL.h; sourceTree = "<group>"; };
+		AD7A8CDF2B65D7E300AD45DA /* PatchFinder_arm64.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = PatchFinder_arm64.h; sourceTree = "<group>"; };
+		AD7A8CE02B65D7E300AD45DA /* CSBlob.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = CSBlob.h; sourceTree = "<group>"; };
+		AD7A8CE12B65D7E300AD45DA /* FileStream.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = FileStream.h; sourceTree = "<group>"; };
+		AD7A8CE22B65D7E300AD45DA /* arm64.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = arm64.h; sourceTree = "<group>"; };
+		AD7A8CE32B65D7E300AD45DA /* Util.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = Util.h; sourceTree = "<group>"; };
+		AD7A8CE42B65D7E300AD45DA /* MachO.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = MachO.h; sourceTree = "<group>"; };
+		AD7A8CE52B65D7E300AD45DA /* MachOByteOrder.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = MachOByteOrder.h; sourceTree = "<group>"; };
+		AD7A8CE62B65D7E300AD45DA /* CodeDirectory.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = CodeDirectory.h; sourceTree = "<group>"; };
+		AD7A8CE72B65D7E300AD45DA /* FAT.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = FAT.h; sourceTree = "<group>"; };
+		AD7A8CE82B65D7E300AD45DA /* BufferedStream.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = BufferedStream.h; sourceTree = "<group>"; };
+		AD7A8CE92B65D7E300AD45DA /* PatchFinder.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = PatchFinder.h; sourceTree = "<group>"; };
+		AD7A8CEA2B65D7F000AD45DA /* libchoma.dylib */ = {isa = PBXFileReference; lastKnownFileType = "compiled.mach-o.dylib"; path = libchoma.dylib; sourceTree = "<group>"; };
 		ADD874832B58AF01004B5AF3 /* IOSurface_shared.c */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.c; path = IOSurface_shared.c; sourceTree = "<group>"; };
 		ADD874842B58AF01004B5AF3 /* IOSurface_shared.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = IOSurface_shared.h; sourceTree = "<group>"; };
 		ADD874862B58AF0B004B5AF3 /* kwrite_IOSurface.c */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.c; path = kwrite_IOSurface.c; sourceTree = "<group>"; };
@@ -210,6 +228,7 @@
 				84438D602B26546E00A1E407 /* MobileCoreServices.framework in Frameworks */,
 				84438D502B260F8200A1E407 /* libzstd in Frameworks */,
 				AD11E9462B57A14F00529403 /* IOKit.framework in Frameworks */,
+				AD7A8CEB2B65D7F000AD45DA /* libchoma.dylib in Frameworks */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -301,14 +320,16 @@
 		AD11E90F2B57A0A200529403 /* include */ = {
 			isa = PBXGroup;
 			children = (
+				AD7A8CD92B65D7E300AD45DA /* choma */,
+				AD7A8CAB2B6566E700AD45DA /* libs */,
 				AD11E94D2B57A19400529403 /* include.h */,
 				AD11E94A2B57A19300529403 /* include.m */,
 				AD11E94B2B57A19300529403 /* krw.h */,
 				AD11E94C2B57A19400529403 /* krw.m */,
 				AD11E9122B57A0B800529403 /* kernelpatchfinder */,
 				AD11E9112B57A0AE00529403 /* MemHogging */,
-				AD7A8C4F2B5CB2F000AD45DA /* jbtools.m */,
-				AD7A8C512B5CB2F900AD45DA /* jbtools.h */,
+				AD7A8C4F2B5CB2F000AD45DA /* sbinject.m */,
+				AD7A8C512B5CB2F900AD45DA /* sbinject.h */,
 			);
 			path = include;
 			sourceTree = "<group>";
@@ -409,6 +430,37 @@
 				AD11E9302B57A13300529403 /* dynamic_info.h */,
 			);
 			path = info;
+			sourceTree = "<group>";
+		};
+		AD7A8CAB2B6566E700AD45DA /* libs */ = {
+			isa = PBXGroup;
+			children = (
+				AD7A8CEA2B65D7F000AD45DA /* libchoma.dylib */,
+			);
+			path = libs;
+			sourceTree = "<group>";
+		};
+		AD7A8CD92B65D7E300AD45DA /* choma */ = {
+			isa = PBXGroup;
+			children = (
+				AD7A8CDA2B65D7E300AD45DA /* MachOLoadCommand.h */,
+				AD7A8CDB2B65D7E300AD45DA /* MemoryStream.h */,
+				AD7A8CDC2B65D7E300AD45DA /* Base64.h */,
+				AD7A8CDD2B65D7E300AD45DA /* Host.h */,
+				AD7A8CDE2B65D7E300AD45DA /* SignOSSL.h */,
+				AD7A8CDF2B65D7E300AD45DA /* PatchFinder_arm64.h */,
+				AD7A8CE02B65D7E300AD45DA /* CSBlob.h */,
+				AD7A8CE12B65D7E300AD45DA /* FileStream.h */,
+				AD7A8CE22B65D7E300AD45DA /* arm64.h */,
+				AD7A8CE32B65D7E300AD45DA /* Util.h */,
+				AD7A8CE42B65D7E300AD45DA /* MachO.h */,
+				AD7A8CE52B65D7E300AD45DA /* MachOByteOrder.h */,
+				AD7A8CE62B65D7E300AD45DA /* CodeDirectory.h */,
+				AD7A8CE72B65D7E300AD45DA /* FAT.h */,
+				AD7A8CE82B65D7E300AD45DA /* BufferedStream.h */,
+				AD7A8CE92B65D7E300AD45DA /* PatchFinder.h */,
+			);
+			path = choma;
 			sourceTree = "<group>";
 		};
 		FE0633B32B41CF4D00B94787 /* Classes */ = {
@@ -551,7 +603,7 @@
 				AD11E93B2B57A13300529403 /* info.m in Sources */,
 				8470998D2B1D855D003FA4ED /* ViewController.m in Sources */,
 				FE895FE82B418FB900A16882 /* ContentView.swift in Sources */,
-				AD7A8C502B5CB2F000AD45DA /* jbtools.m in Sources */,
+				AD7A8C502B5CB2F000AD45DA /* sbinject.m in Sources */,
 				FE0633AE2B41BCD900B94787 /* OptionsView.swift in Sources */,
 				AD11E94E2B57A19400529403 /* include.m in Sources */,
 				FE84597B2B44508300DCB44E /* AppViewControllerWrapper.swift in Sources */,
@@ -776,6 +828,10 @@
 					"$(inherited)",
 					"@executable_path/Frameworks",
 				);
+				LIBRARY_SEARCH_PATHS = (
+					"$(inherited)",
+					"$(PROJECT_DIR)/Bootstrap/include/libs",
+				);
 				MARKETING_VERSION = 1.1;
 				OTHER_LDFLAGS = "";
 				PRODUCT_BUNDLE_IDENTIFIER = "com.roothide.Bootstrap-g3n3sis";
@@ -814,6 +870,10 @@
 				LD_RUNPATH_SEARCH_PATHS = (
 					"$(inherited)",
 					"@executable_path/Frameworks",
+				);
+				LIBRARY_SEARCH_PATHS = (
+					"$(inherited)",
+					"$(PROJECT_DIR)/Bootstrap/include/libs",
 				);
 				MARKETING_VERSION = 1.1;
 				OTHER_LDFLAGS = "";

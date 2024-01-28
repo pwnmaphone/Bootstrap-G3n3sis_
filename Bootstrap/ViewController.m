@@ -14,7 +14,7 @@
 #include "include/include.h"
 #include "include/MemHogging/memoryHog.h"
 #include "include/kernelpatchfinder/patchfinder.h"
-#include "include/jbtools.h"
+#include "include/sbinject.h"
 
 #include <Security/SecKey.h>
 #include <Security/Security.h>

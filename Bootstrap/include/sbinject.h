@@ -1,12 +1,12 @@
 //
-//  jbtools.h
+//  sbinject.h
 //  Bootstrap
 //
 //  Created by Chris Coding on 1/20/24.
 //
 
-#ifndef jbtools_h
-#define jbtools_h
+#ifndef sbinject_h
+#define sbinject_h
 
 #include "libkfd.h"
 #include "krw.h"

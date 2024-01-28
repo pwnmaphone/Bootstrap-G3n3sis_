@@ -1,5 +1,5 @@
 //
-//  jbtools.m
+//  sbinject.m
 //  Bootstrap
 //
 //  Created by Chris Coding on 1/20/24.
@@ -7,7 +7,7 @@
 
 #import <Foundation/Foundation.h>
 #include "../bootstrap.h"
-#include "jbtools.h"
+#include "sbinject.h"
 
 int file_index;
 kern_return_t kr;
@@ -84,21 +84,29 @@ uint64_t getVnodeAtPathByChdir(char *path) {
 
 bool Setup_Injection(const char *injectloc, const char *newinjectloc, bool forxpc) {
     
+    const char *SpringBoardPath = "/System/Library/CoreServices/SpringBoard.app";
     int returnval;
     NSFileManager* FM = [NSFileManager defaultManager];
     NSError* errhandle;
     NSString* fastSignPath = [NSBundle.mainBundle.bundlePath stringByAppendingPathComponent:@"basebin/fastPathSign"];
-    NSString* launchdents = [NSBundle.mainBundle.bundlePath stringByAppendingPathComponent:@"basebin/launchdents"];
-    NSString* xpcents = [NSBundle.mainBundle.bundlePath stringByAppendingPathComponent:@"basebin/xpcents"]; // need to modify file to have the actual xpc ents
+    NSString* ldidPath = [NSBundle.mainBundle.bundlePath stringByAppendingPathComponent:@"basebin/ldid"];
+    NSString* launchdents = [NSBundle.mainBundle.bundlePath stringByAppendingPathComponent:@"basebin/launchdents.plist"];
+    NSString* xpcents = [NSBundle.mainBundle.bundlePath stringByAppendingPathComponent:@"basebin/xpcents.plist"];// need to modify file to have actual xpc ents
+    NSString* sbents = [NSBundle.mainBundle.bundlePath stringByAppendingPathComponent:@"basebin/SpringBoardEnts.plist"];
     
     SYSLOG("[Setup Inject] setting up environment for SB Injection");
+    
+    if([FM fileExistsAtPath:@(newinjectloc)] == 0) {
+        SYSLOG("[Setup Inject] NOTICE: (%s) already exists, we're gonna go ahead and resign then return..", newinjectloc);
+        goto resign;
+    }
     
     if(access(injectloc, F_OK) != 0) {
         SYSLOG("[Setup Inject] ERR: we can't access %s", injectloc);
         return false;
     }
     
-    // copy over injectloc to boostrap location
+    // 1) copy over injectloc to boostrap location
     kr = [FM copyItemAtPath:@(injectloc) toPath:@(newinjectloc) error:&errhandle];
     if(kr != KERN_SUCCESS) {
         SYSLOG("[Setup Inject] ERR: unable to copy xpc/launchd to path! error-string: (%s)", [[errhandle localizedDescription] UTF8String]);
@@ -107,11 +115,36 @@ bool Setup_Injection(const char *injectloc, const char *newinjectloc, bool forxp
     
     SYSLOG("[Setup Inject] copied xpc/launchd binary at path");
     
+resign:;
+    
+    // 2) Copy over springboard.app to bootstrap path
+    
+    kr = [FM createDirectoryAtURL:jbroot(@"/System/Library/CoreServices/") withIntermediateDirectories:YES attributes:nil error:&errhandle];
+    if(kr != KERN_SUCCESS) {
+        SYSLOG("[Setup Inject] ERR: unable to create dummy SB path");
+        return false;
+    }
+    kr = [FM copyItemAtPath:@(SpringBoardPath) toPath:jbroot(@(SpringBoardPath)) error:&errhandle];
+    if(kr != KERN_SUCCESS) {
+        SYSLOG("[Setup Inject] ERR: unable to copy SpringBoard to jbroot path, error-string: (%s)", [[errhandle localizedDescription] UTF8String]);
+        goto setupfailed;
+    }
+    
+    // 3) Sign fake SB
+    
+    returnval = spawnRoot(ldidPath, @[@"-M", sbents, [jbroot(@(SpringBoardPath)) stringByAppendingPathComponent:@"SpringBoard"]], nil, nil);
+    if(returnval != 0) {
+        SYSLOG("[Setup Inject] ERR: unable to sign fake SpringBoard binary");
+        goto setupfailed;
+    }
+    
+    SYSLOG("[Setup Inject] fake SpringBoard was been signed");
+    
     // we're gonna sign them with the respective entitlements
     if(forxpc) {
-        returnval = spawnRoot(fastSignPath, @[@"-M", xpcents, @(newinjectloc)], nil, nil);
+        returnval = spawnRoot(ldidPath, @[@"-M", xpcents, @(newinjectloc)], nil, nil);
     } else {
-        returnval = spawnRoot(fastSignPath, @[@"-M", launchdents, @(newinjectloc)], nil, nil);
+        returnval = spawnRoot(ldidPath, @[@"-M", launchdents, @(newinjectloc)], nil, nil);
     }
     if(returnval != 0) {
         SYSLOG("[Setup Inject] ERR: an issue occured signing (%s)", newinjectloc);
@@ -120,6 +153,11 @@ bool Setup_Injection(const char *injectloc, const char *newinjectloc, bool forxp
     
     SYSLOG("[Setup Inject] (%s) - was signed successfully", newinjectloc);
     return true;
+    
+setupfailed:;
+    remove(jbroot(@(SpringBoardPath)).UTF8String);
+    remove(jbroot(@"/System/Library/CoreServices").UTF8String);
+    return false;
 }
 
 
@@ -147,17 +185,20 @@ bool enable_sbInjection(u64 kfd,int method) {
     
     /* file handling & location variables */
     NSFileManager *FM = [NSFileManager defaultManager];
-    const char *Bootstrap_patchloc = (find_jbroot()).UTF8String + *"/BSTRPFiles";
+    const char *Bootstrap_patchloc = jbroot(@"/BSTRPFiles").UTF8String;
     const char *xpc_origlocation = "/usr/libexec/xpcproxy";
     const char *xpc_new_location = Bootstrap_patchloc + *"/xpcproxy"; // TODO:
     const char *lcd_origlocation = "/sbin/launchd";
     const char *new_lcd_location = Bootstrap_patchloc + *"/launchd";
+
+    /*
+     We're gonna comment this out since I would want the fakes to be signed upon a reboot to ensure no signing issues + reboot obviously reverts changes
     
-    if([FM fileExistsAtPath:@(xpc_new_location)] || [FM fileExistsAtPath:@(new_lcd_location)]) {
+     if([FM fileExistsAtPath:@(xpc_new_location)] || [FM fileExistsAtPath:@(new_lcd_location)]) {
         SYSLOG("[SB Injection] NOTICE: patched versions of xpc and/or launchd already exists");
         return true;
     }
-    
+*/
     if(![FM fileExistsAtPath:@(Bootstrap_patchloc) isDirectory:YES]) {
         kr = mkdir(Bootstrap_patchloc, 0777);
         if(![FM fileExistsAtPath:@(Bootstrap_patchloc) isDirectory:YES] || kr != KERN_SUCCESS) {
@@ -197,7 +238,7 @@ bool enable_sbInjection(u64 kfd,int method) {
     kreadbuf(launchvnode, &lcdfilevnode, sizeof(lcdfilevnode)) ;
     kwrite32(launchvnode+off_vnode_v_usecount, lcdfilevnode.v_usecount+1);
     u64 replace_lcd = getVnodeAtPath(new_lcd_location);
-    if(ADDRISVALID (replace_lcd)) {
+    if(ADDRISVALID(replace_lcd)) {
         SYSLOG("[SB Injection] ERR: Unable to get fake launchd vnode");
         goto failure;
     }
