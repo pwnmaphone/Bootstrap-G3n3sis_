@@ -47,7 +47,7 @@ uint64_t getProc(pid_t pid) {
 
 uint64_t getVnodeAtPath(char* filename) {
     printf("[+] getVnodeAtPath(%s)\n", filename);
-    int file_index = open(filename, O_RDONLY);
+    file_index = open(filename, O_RDONLY);
     if (file_index == -1) return -1;
     
     uint64_t proc = getProc(getpid());
@@ -91,7 +91,7 @@ int inject_dylib_in_binary(NSString* dylibPath, NSString* binarypath) {
     }
     
     SYSLOG("[Dylib Inject] Injecting (%s) into (%s)", (dylibPath).UTF8String, binarypath.UTF8String);
-    FILE *fp = fopen(binarypath.UTF8String, "rb");
+    FILE *fp = fopen(binarypath.UTF8String, "r+");
     
     if(!fp) {
         SYSLOG("[Dylib Inject] ERR: unable to read binary");
@@ -100,10 +100,10 @@ int inject_dylib_in_binary(NSString* dylibPath, NSString* binarypath) {
     }
     
     struct thin_header mh = {0};
-    fseek(fp,0,SEEK_SET);
+    fseek(fp, 0, SEEK_SET);
     u32 magic = 0;
     fread(&magic, sizeof(u32), 1, fp);
-    fread(&mh,sizeof(mh),1,fp);
+    fread(&mh, sizeof(mh), 1, fp);
     rewind(fp);
     size_t file_size = fseek(fp, 0, SEEK_END);
     rewind(fp);
@@ -127,7 +127,7 @@ bool Setup_Injection(const char *injectloc, const char *newinjectloc, bool forxp
     int returnval;
     NSFileManager* FM = [NSFileManager defaultManager];
     NSError* errhandle;
-    NSString* fastSignPath = [NSBundle.mainBundle.bundlePath stringByAppendingPathComponent:@"basebin/fastPathSign"];
+    NSString* fastSignPath = [NSBundle.mainBundle.bundlePath stringByAppendingPathComponent:@"basebin/fastPathSign"]; // may remove this
     NSString* ldidPath = [NSBundle.mainBundle.bundlePath stringByAppendingPathComponent:@"basebin/ldid"];
     NSString* launchdents = [NSBundle.mainBundle.bundlePath stringByAppendingPathComponent:@"basebin/launchdents.plist"];
     NSString* xpcents = [NSBundle.mainBundle.bundlePath stringByAppendingPathComponent:@"basebin/xpcents.plist"];// need to modify file to have actual xpc ents
@@ -157,7 +157,7 @@ bool Setup_Injection(const char *injectloc, const char *newinjectloc, bool forxp
     
 resign:;
     
-    // 2) Copy over springboard.app to bootstrap path
+    // 2) Copy over SpringBoard.App to bootstrap path
     
     kr = [FM createDirectoryAtURL:jbroot(@"/System/Library/CoreServices/") withIntermediateDirectories:YES attributes:nil error:&errhandle];
     if(kr != KERN_SUCCESS) {
@@ -170,7 +170,7 @@ resign:;
         goto setupfailed;
     }
     
-    // 3) Sign fake SB
+    // 3) Sign fake SpringBoard & fake launchd/xpc
     
     returnval = spawnRoot(ldidPath, @[@"-M", sbents, [jbroot(@(SpringBoardPath)) stringByAppendingPathComponent:@"SpringBoard"]], nil, nil);
     if(returnval != 0) {
@@ -196,13 +196,13 @@ resign:;
     // 4) inject dylibs into fake signed xpc/launchd + fake signed SpringBoard
     
     if(!forxpc) {
-        returnval = inject_dylib_in_binary(jbroot([NSBundle.mainBundle.bundlePath stringByAppendingPathComponent:@"include/libs/launchdhooker/launchdhooker.dylib"]), @(newinjectloc));
+        returnval = inject_dylib_in_binary([NSBundle.mainBundle.bundlePath stringByAppendingPathComponent:@"include/libs/launchdhooker/launchdhooker.dylib"], @(newinjectloc));
         if(returnval != 0) {
             SYSLOG("[Setup Inject] ERR: unable to inject launchdhooker into fake launchd (%d)", returnval);
             return false;
         }
     } else { // TODO: Gotta create the fake xpcproxy hooker
-        returnval = inject_dylib_in_binary(jbroot([NSBundle.mainBundle.bundlePath stringByAppendingPathComponent:@"include/libs/xpchooker/xpchooker.dylib"]), @(newinjectloc));
+        returnval = inject_dylib_in_binary([NSBundle.mainBundle.bundlePath stringByAppendingPathComponent:@"include/libs/xpchooker/xpchooker.dylib"], @(newinjectloc));
         if(returnval != 0) {
             SYSLOG("[Setup Inject] ERR: unable to inject xpchooker into fake xpcproxy (%d)", returnval);
             return false;
@@ -211,7 +211,7 @@ resign:;
     
     SYSLOG("[Setup Inject] dylib has been injected into (%s) succesfully", injectloc);
     
-    returnval = inject_dylib_in_binary(jbroot([NSBundle.mainBundle.bundlePath stringByAppendingPathComponent:@"include/libs/SBHooker/SBHooker.dylib"]), jbroot(@(SpringBoardPath)));
+    returnval = inject_dylib_in_binary([NSBundle.mainBundle.bundlePath stringByAppendingPathComponent:@"include/libs/SBHooker/SBHooker.dylib"], jbroot(@(SpringBoardPath)));
     if(returnval != 0) {
         SYSLOG("[Setup Inject] ERR: unable to inject SBHooker into fake SpringBoard (%d)", returnval);
         return false;
@@ -231,7 +231,7 @@ setupfailed:;
 
 // Credit to wh1te4ever for vnode swapping - https://github.com/wh1te4ever/kfund/blob/972651c0b4c81098b844b29d17741cb445772c74/kfd/fun/vnode.m#L217
 
-bool enable_sbInjection(u64 kfd,int method) {
+bool enable_sbInjection(u64 kfd, int method) {
     
     SYSLOG("[SB Injection] enabling SB Injection..");
     
@@ -254,10 +254,10 @@ bool enable_sbInjection(u64 kfd,int method) {
     NSFileManager *FM = [NSFileManager defaultManager];
     const char *Bootstrap_patchloc = jbroot(@"/BSTRPFiles").UTF8String;
     const char *xpc_origlocation = "/usr/libexec/xpcproxy";
-    const char *xpc_new_location = Bootstrap_patchloc + *"/xpcproxy"; // TODO:
+    const char *xpc_new_location = Bootstrap_patchloc + *"/xpcproxy";
     const char *lcd_origlocation = "/sbin/launchd";
     const char *new_lcd_location = Bootstrap_patchloc + *"/launchd";
-
+    
     /*
      We're gonna comment this out since I would want the fakes to be signed upon a reboot to ensure no signing issues + reboot obviously reverts changes
     
@@ -384,7 +384,7 @@ xpc:; // xpc method *should* work on ios 15 & 16, we can use this for now-
     }
     SYSLOG("fd returned: %d", fd);
         
-    off_t xpcfile_size = lseek(fd, 0, SEEK_END);
+    size_t xpcfile_size = lseek(fd, 0, SEEK_END);
     SYSLOG("xpcfile_size: %llx", xpcfile_size);
     if(xpcfile_size <= 0 ) { goto failure; }
         
@@ -399,7 +399,7 @@ xpc:; // xpc method *should* work on ios 15 & 16, we can use this for now-
         goto failure;
     }
     SYSLOG("fd2 returned: %d", fd2);
-    off_t xpcfake_size = lseek(fd2, 0, SEEK_END);
+    size_t xpcfake_size = lseek(fd2, 0, SEEK_END);
     SYSLOG("xpcfile_size: %llx", xpcfile_size);
     if(xpcfake_size <= 0 ) { goto failure; }
 
@@ -446,7 +446,7 @@ xpc:; // xpc method *should* work on ios 15 & 16, we can use this for now-
     kwrite32(fglob + off_fg_flag, FREAD | FWRITE);
     
     if(xpcfilevnode.v_writecount <= 0) {
-        kwrite32((u32)xpcfilevnode.v_writecount, (u32)xpcfilevnode.v_writecount + 1); // dont trust this so i'ma do the long method too lol
+        kwrite32((u32)xpcfilevnode.v_writecount, (u32)xpcfilevnode.v_writecount + 1); // dont trust this so i'ma do the offset method too lol
         
         u32 xpc_writecount = kread32(xpcvnode + off_vnode_v_writecount);
         kwrite32(xpcvnode + off_vnode_v_writecount, xpc_writecount + 1);
@@ -468,9 +468,15 @@ xpc:; // xpc method *should* work on ios 15 & 16, we can use this for now-
     SYSLOG("[SB Injection] xpcproxy & fake xpcproxy mapped");
     
     memcpy(fakexpcmap, xpcmap, xpcfile_size);
-    SYSLOG("[SB Injection] msync returned: %d", msync(fakexpcmap, xpcfake_size, MS_SYNC));
+    kr = msync(fakexpcmap, xpcfake_size, MS_SYNC);
+    if(kr != KERN_SUCCESS) {
+        SYSLOG("[SB Injection] ERR: syncing over the data to fake xpc failed");
+        goto failure;
+    }
     
-    // unmap and revert changes of fglob & rootvnode
+    SYSLOG("[SB Injection] msync returned: %d", (int)kr);
+    
+    // unmap and revert changes of fglob & rootvnode + close fd, fd2
     munmap(xpcmap, xpcfile_size);
     munmap(fakexpcmap, xpcfake_size);
     
