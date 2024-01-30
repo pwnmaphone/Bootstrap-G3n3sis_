@@ -1,0 +1,9 @@
+Package: g3n3sis
+Name: SBHooker
+Version: 0.0.1
+Architecture: iphoneos-arm
+Description: An awesome MobileSubstrate tweak!
+Maintainer: G3n3sis_
+Author: G3n3sis_
+Section: Tweaks
+Depends: mobilesubstrate (>= 0.9.5000)

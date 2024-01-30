@@ -26,3 +26,23 @@ int (*orig_posix_spawn)(pid_t * __restrict pid, const char * __restrict path,
                         char *const argv[ __restrict], char *const envp[ __restrict]);
 
 int (*orig_posix_spawnp)(pid_t *restrict pid, const char *restrict path, const posix_spawn_file_actions_t *restrict file_actions, const posix_spawnattr_t *restrict attrp, char *const argv[restrict], char *const envp[restrict]);
+
+
+int hooked_csops(pid_t pid, unsigned int ops, void *useraddr, size_t usersize) {
+    int result = orig_csops(pid, ops, useraddr, usersize);
+    if (result != 0) return result;
+    if (ops == 0) { // CS_OPS_STATUS
+        *((uint32_t *)useraddr) |= 0x4000000; // CS_PLATFORM_BINARY
+    }
+    return result;
+}
+
+int hooked_csops_audittoken(pid_t pid, unsigned int ops, void * useraddr, size_t usersize, audit_token_t * token) {
+    int result = orig_csops_audittoken(pid, ops, useraddr, usersize, token);
+    if (result != 0) return result;
+    if (ops == 0) { // CS_OPS_STATUS
+        *((uint32_t *)useraddr) |= 0x4000000; // CS_PLATFORM_BINARY
+    }
+    return result;
+}
+

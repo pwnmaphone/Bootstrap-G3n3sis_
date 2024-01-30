@@ -95,5 +95,5 @@ bool free_memory(uint64_t* mem) {
         return false;
     }
     
-    return true;
+    return ret == 0 ? true:false;
 }

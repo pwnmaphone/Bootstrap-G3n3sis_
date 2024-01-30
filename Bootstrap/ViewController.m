@@ -15,6 +15,7 @@
 #include "include/MemHogging/memoryHog.h"
 #include "include/kernelpatchfinder/patchfinder.h"
 #include "include/sbinject.h"
+#include "include/optool/operations.h"
 
 #include <Security/SecKey.h>
 #include <Security/Security.h>
@@ -173,6 +174,20 @@ BOOL checkTSVersion()
     SYSLOG("teamID in trollstore: %@", teamID);
     
     return [teamID isEqualToString:@"T8ALTGMVXN"];
+}
+
+BOOL SBInjectionEnvironmentCheck() {
+    // we'll just and see if the dylib is currently injected in the binaries load commands
+    NSString* launchd = @"/sbin/launchd";
+    NSString* launchddylib = [NSBundle.mainBundle.bundlePath stringByAppendingPathComponent:@"include/libs/launchdhooker/launchdhooker.dylib"];
+    
+    FILE *fp = fopen(launchd.UTF8String, "r+");
+    struct thin_header mh = {0};
+    fseek(fp, 0, SEEK_SET);
+    fread(&mh, sizeof(mh), 1, fp);
+    bool isinjected = binaryHasLoadCommandForDylib((NSMutableData*)launchd, launchddylib, 0, mh);
+    fclose(fp);
+    return isinjected ? YES:NO;
 }
 
 void respringAction()
@@ -368,7 +383,10 @@ BOOL opensshAction(BOOL enable)
 
 void bootstrapAction()
 {
-    
+    /* 
+     We're gonna have kfd run first before the bootstrap process, just so if kfd fails, it won't mess up anything
+     during the boostrapping process. (I'll add this change once I'm done with the hooking stuff)
+     */
     dispatch_async(dispatch_get_global_queue(0, 0), ^{
         
         uint64_t kfd = 0;
@@ -504,6 +522,8 @@ void bootstrapAction()
         if(gTweakEnabled && ![NSFileManager.defaultManager fileExistsAtPath:jbroot(@"/var/mobile/.tweakenabled")]) {
             ASSERT([[NSString new] writeToFile:jbroot(@"/var/mobile/.tweakenabled") atomically:YES encoding:NSUTF8StringEncoding error:nil]);
         }
+     
+step2:;
 
         [generator impactOccurred];
         [AppDelegate addLogText:Localized(@"respring now...")]; sleep(1);

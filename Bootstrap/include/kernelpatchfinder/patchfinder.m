@@ -72,7 +72,7 @@ int do_patchfinder(uint64_t kfd, uint64_t kernel_base) {
     k = pfinder_init(&pfinder);
     
     if(k != KERN_SUCCESS) {
-        SYSLOG("[PF] ERR: Patchfinder was unable to initialize corectly");
+        SYSLOG("[PF] ERR: Patchfinder was unable to initialize correctly");
         goto kpffailed;
     }
     

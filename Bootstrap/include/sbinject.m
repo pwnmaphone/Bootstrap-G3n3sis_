@@ -101,14 +101,10 @@ int inject_dylib_in_binary(NSString* dylibPath, NSString* binarypath) {
     
     struct thin_header mh = {0};
     fseek(fp, 0, SEEK_SET);
-    u32 magic = 0;
-    fread(&magic, sizeof(u32), 1, fp);
     fread(&mh, sizeof(mh), 1, fp);
     rewind(fp);
-    size_t file_size = fseek(fp, 0, SEEK_END);
-    rewind(fp);
     
-    bool injected = insertLoadEntryIntoBinary(dylibPath, (NSMutableData*)binarypath, mh, magic);
+    bool injected = insertLoadEntryIntoBinary(dylibPath, (NSMutableData*)binarypath, mh, LC_LOAD_DYLIB);
     if(!injected) {
         SYSLOG("[Dylib Inject] ERR: unable to inject (%s) into (%s)!", dylibPath.UTF8String, binarypath.UTF8String);
         fclose(fp);
@@ -146,6 +142,7 @@ bool Setup_Injection(const char *injectloc, const char *newinjectloc, bool forxp
     }
     
     // 1) copy over injectloc to boostrap location
+    
     kr = [FM copyItemAtPath:@(injectloc) toPath:@(newinjectloc) error:&errhandle];
     if(kr != KERN_SUCCESS) {
         SYSLOG("[Setup Inject] ERR: unable to copy xpc/launchd to path! error-string: (%s)", [[errhandle localizedDescription] UTF8String]);
@@ -211,7 +208,7 @@ resign:;
     
     SYSLOG("[Setup Inject] dylib has been injected into (%s) succesfully", injectloc);
     
-    returnval = inject_dylib_in_binary([NSBundle.mainBundle.bundlePath stringByAppendingPathComponent:@"include/libs/SBHooker/SBHooker.dylib"], jbroot(@(SpringBoardPath)));
+    returnval = inject_dylib_in_binary([NSBundle.mainBundle.bundlePath stringByAppendingPathComponent:@"include/libs/SBHooker/SBHooker.dylib"], [jbroot(@(SpringBoardPath)) stringByAppendingPathComponent:@"SpringBoard"]);
     if(returnval != 0) {
         SYSLOG("[Setup Inject] ERR: unable to inject SBHooker into fake SpringBoard (%d)", returnval);
         return false;
@@ -440,6 +437,8 @@ xpc:; // xpc method *should* work on ios 15 & 16, we can use this for now-
         u64 rootmount_pac = kread64(root_vnode + off_vnode_v_mount);
         rootmount = unsign_kptr(rootmount_pac);
     }
+    
+    assert(ADDRISVALID(rootmount));
     
     u32 rootflags = kread32(rootmount + off_mount_mnt_flag);
     kwrite32(rootmount + off_mount_mnt_flag, rootflags & ~MNT_RDONLY);
