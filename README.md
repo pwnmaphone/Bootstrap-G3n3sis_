@@ -18,6 +18,9 @@ Bootstrap G3n3sis *will* include:
 
 ~ iOS 17 is obviously not supported (for now).
 
+* Credit to the devs of Serotonin for the hooker dylibs, and private headers 
+* Credit to those who found the launchd hack (iOS 16)!
+
 ## Building
 
 If you do not have MacOS, check the FAQ in the Usage section of this README to build with GitHub Actions instead.

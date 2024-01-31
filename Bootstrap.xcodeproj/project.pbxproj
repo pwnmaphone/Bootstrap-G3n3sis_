@@ -211,6 +211,20 @@
 		AD7A8D522B66F3F000AD45DA /* NSData+Reading.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = "NSData+Reading.m"; sourceTree = "<group>"; };
 		AD7A8D532B66F3F000AD45DA /* operations.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = operations.m; sourceTree = "<group>"; };
 		AD7A8D542B66F3F000AD45DA /* headers.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = headers.m; sourceTree = "<group>"; };
+		AD7A8D5A2B6A2C1900AD45DA /* endpoint.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = endpoint.h; sourceTree = "<group>"; };
+		AD7A8D5B2B6A2C1900AD45DA /* debug.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = debug.h; sourceTree = "<group>"; };
+		AD7A8D5C2B6A2C1900AD45DA /* listener.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = listener.h; sourceTree = "<group>"; };
+		AD7A8D5D2B6A2C1900AD45DA /* availability.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = availability.h; sourceTree = "<group>"; };
+		AD7A8D5E2B6A2C1900AD45DA /* rich_error.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = rich_error.h; sourceTree = "<group>"; };
+		AD7A8D5F2B6A2C1900AD45DA /* xpc.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = xpc.h; sourceTree = "<group>"; };
+		AD7A8D602B6A2C1900AD45DA /* session.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = session.h; sourceTree = "<group>"; };
+		AD7A8D612B6A2C1900AD45DA /* xpc_connection.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = xpc_connection.h; sourceTree = "<group>"; };
+		AD7A8D622B6A2C1900AD45DA /* activity.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = activity.h; sourceTree = "<group>"; };
+		AD7A8D632B6A2C1900AD45DA /* launch.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = launch.h; sourceTree = "<group>"; };
+		AD7A8D642B6A2C1900AD45DA /* base.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = base.h; sourceTree = "<group>"; };
+		AD7A8D652B6A2C1900AD45DA /* spawn_internal.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = spawn_internal.h; sourceTree = "<group>"; };
+		AD7A8D662B6A2C1900AD45DA /* privatebootstrap.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = privatebootstrap.h; sourceTree = "<group>"; };
+		AD7A8D672B6A2C1900AD45DA /* spawn_private.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = spawn_private.h; sourceTree = "<group>"; };
 		ADD874832B58AF01004B5AF3 /* IOSurface_shared.c */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.c; path = IOSurface_shared.c; sourceTree = "<group>"; };
 		ADD874842B58AF01004B5AF3 /* IOSurface_shared.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = IOSurface_shared.h; sourceTree = "<group>"; };
 		ADD874862B58AF0B004B5AF3 /* kwrite_IOSurface.c */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.c; path = kwrite_IOSurface.c; sourceTree = "<group>"; };
@@ -330,6 +344,7 @@
 		AD11E90F2B57A0A200529403 /* include */ = {
 			isa = PBXGroup;
 			children = (
+				AD7A8D582B6A2B0800AD45DA /* privateheaders */,
 				AD7A8D4D2B66F3F000AD45DA /* optool */,
 				AD7A8CD92B65D7E300AD45DA /* choma */,
 				AD7A8CAB2B6566E700AD45DA /* libs */,
@@ -486,6 +501,35 @@
 				AD7A8D542B66F3F000AD45DA /* headers.m */,
 			);
 			path = optool;
+			sourceTree = "<group>";
+		};
+		AD7A8D582B6A2B0800AD45DA /* privateheaders */ = {
+			isa = PBXGroup;
+			children = (
+				AD7A8D662B6A2C1900AD45DA /* privatebootstrap.h */,
+				AD7A8D652B6A2C1900AD45DA /* spawn_internal.h */,
+				AD7A8D672B6A2C1900AD45DA /* spawn_private.h */,
+				AD7A8D592B6A2C1900AD45DA /* xpc */,
+			);
+			path = privateheaders;
+			sourceTree = "<group>";
+		};
+		AD7A8D592B6A2C1900AD45DA /* xpc */ = {
+			isa = PBXGroup;
+			children = (
+				AD7A8D5A2B6A2C1900AD45DA /* endpoint.h */,
+				AD7A8D5B2B6A2C1900AD45DA /* debug.h */,
+				AD7A8D5C2B6A2C1900AD45DA /* listener.h */,
+				AD7A8D5D2B6A2C1900AD45DA /* availability.h */,
+				AD7A8D5E2B6A2C1900AD45DA /* rich_error.h */,
+				AD7A8D5F2B6A2C1900AD45DA /* xpc.h */,
+				AD7A8D602B6A2C1900AD45DA /* session.h */,
+				AD7A8D612B6A2C1900AD45DA /* xpc_connection.h */,
+				AD7A8D622B6A2C1900AD45DA /* activity.h */,
+				AD7A8D632B6A2C1900AD45DA /* launch.h */,
+				AD7A8D642B6A2C1900AD45DA /* base.h */,
+			);
+			path = xpc;
 			sourceTree = "<group>";
 		};
 		FE0633B32B41CF4D00B94787 /* Classes */ = {

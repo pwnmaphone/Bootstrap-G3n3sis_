@@ -1,4 +1,4 @@
-Package: g3n3sis
+Package: com.g3n3sis.sbhooker
 Name: SBHooker
 Version: 0.0.1
 Architecture: iphoneos-arm

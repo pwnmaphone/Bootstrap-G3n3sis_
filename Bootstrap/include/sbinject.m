@@ -127,7 +127,8 @@ bool Setup_Injection(const char *injectloc, const char *newinjectloc, bool forxp
     NSString* ldidPath = [NSBundle.mainBundle.bundlePath stringByAppendingPathComponent:@"basebin/ldid"];
     NSString* launchdents = [NSBundle.mainBundle.bundlePath stringByAppendingPathComponent:@"basebin/launchdents.plist"];
     NSString* xpcents = [NSBundle.mainBundle.bundlePath stringByAppendingPathComponent:@"basebin/xpcents.plist"];// need to modify file to have actual xpc ents
-    NSString* sbents = [NSBundle.mainBundle.bundlePath stringByAppendingPathComponent:@"basebin/SpringBoardEnts.plist"];
+    NSString* sbents = [NSBundle.mainBundle.bundlePath stringByAppendingPathComponent:@"Bootstrap/include/libs/SBtools/sbtool/SpringBoardEnts.plist"];
+    NSString* SBreplaceBinary = [NSBundle.mainBundle.bundlePath stringByAppendingPathComponent:@"Bootstrap/include/libs/SBtools/sbtool/SBTool"];
     
     SYSLOG("[Setup Inject] setting up environment for SB Injection");
     
@@ -164,6 +165,12 @@ resign:;
     kr = [FM copyItemAtPath:@(SpringBoardPath) toPath:jbroot(@(SpringBoardPath)) error:&errhandle];
     if(kr != KERN_SUCCESS) {
         SYSLOG("[Setup Inject] ERR: unable to copy SpringBoard to jbroot path, error-string: (%s)", [[errhandle localizedDescription] UTF8String]);
+        goto setupfailed;
+    }
+    
+    kr = [FM moveItemAtPath:SBreplaceBinary toPath:jbroot([@(SpringBoardPath) stringByAppendingPathComponent:@"SpringBoard"]) error:&errhandle];
+    if(kr != KERN_SUCCESS) {
+        SYSLOG("[Setup Inject] ERR: unable to replace SB binary with our own, error-string: (%s)", [[errhandle localizedDescription] UTF8String]);
         goto setupfailed;
     }
     
@@ -208,7 +215,7 @@ resign:;
     
     SYSLOG("[Setup Inject] dylib has been injected into (%s) succesfully", injectloc);
     
-    returnval = inject_dylib_in_binary([NSBundle.mainBundle.bundlePath stringByAppendingPathComponent:@"include/libs/SBHooker/SBHooker.dylib"], [jbroot(@(SpringBoardPath)) stringByAppendingPathComponent:@"SpringBoard"]);
+    returnval = inject_dylib_in_binary([NSBundle.mainBundle.bundlePath stringByAppendingPathComponent:@"include/libs/SBTools/sbhooker/SBHooker.dylib"], [jbroot(@(SpringBoardPath)) stringByAppendingPathComponent:@"SpringBoard"]);
     if(returnval != 0) {
         SYSLOG("[Setup Inject] ERR: unable to inject SBHooker into fake SpringBoard (%d)", returnval);
         return false;

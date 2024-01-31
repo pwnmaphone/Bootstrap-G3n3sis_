@@ -1,0 +1,9 @@
+Package: com.g3n3sis.sbtool
+Name: SBTool
+Version: 0.0.1
+Architecture: iphoneos-arm
+Description: An awesome tool of some sort!!
+Maintainer: G3n3sis_
+Author: G3n3sis_
+Section: System
+Tag: role::hacker
