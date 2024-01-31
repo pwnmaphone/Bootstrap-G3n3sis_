@@ -176,6 +176,7 @@ BOOL checkTSVersion()
     return [teamID isEqualToString:@"T8ALTGMVXN"];
 }
 
+/*                                          we may not need this at all
 BOOL SBInjectionEnvironmentCheck() {
     // we'll just and see if the dylib is currently injected in the binaries load commands
     NSString* launchd = @"/sbin/launchd";
@@ -188,6 +189,16 @@ BOOL SBInjectionEnvironmentCheck() {
     bool isinjected = binaryHasLoadCommandForDylib((NSMutableData*)launchd, launchddylib, 0, mh);
     fclose(fp);
     return isinjected ? YES:NO;
+}
+ */
+
+BOOL StepIncrement() {
+    kern_return_t k = [[NSFileManager defaultManager] createFileAtPath:jbroot(@"/.enableSB") contents:nil attributes:nil];
+    if(k != KERN_SUCCESS) {
+        SYSLOG("Unable to increment next step!");
+        return NO;
+    }
+    return YES;
 }
 
 void respringAction()
@@ -383,13 +394,9 @@ BOOL opensshAction(BOOL enable)
 
 void bootstrapAction()
 {
-    /* 
-     We're gonna have kfd run first before the bootstrap process, just so if kfd fails, it won't mess up anything
-     during the boostrapping process. (I'll add this change once I'm done with the hooking stuff)
-     */
-    dispatch_async(dispatch_get_global_queue(0, 0), ^{
-        
-        uint64_t kfd = 0;
+    uint64_t kfd = 0;
+    
+    if([[NSFileManager defaultManager] fileExistsAtPath:jbroot(@"/.enableSB")]) {
         uint64_t* mem = NULL;
         const char *Exploit = NSProcessInfo.processInfo.operatingSystemVersion.majorVersion < 16 ? "KFDIO" : "KFD";
         
@@ -412,16 +419,17 @@ void bootstrapAction()
         [AppDelegate addLogText:[NSString stringWithFormat:@"[Bootstrap]: Running %s exploit, using %d pages", Exploit, kfd_pages]];
         kfd = exploit_runner(Exploit, kfd_pages);
         if(kfd == 0) {
-                [AppDelegate showMesage:Localized(@"The KFD exploit failed. Please reboot and try again.") title:Localized(@"Error")];
-                [AppDelegate addLogText:Localized(@"[Bootstrap]: ERR: kfd exploit failed")];
-                return;
+            [AppDelegate showMesage:Localized(@"The KFD exploit failed. Please reboot and try again.") title:Localized(@"Error")];
+            [AppDelegate addLogText:Localized(@"[Bootstrap]: ERR: kfd exploit failed")];
+            return;
         }
         
         SYSLOG("kfd success: %llx", kfd);
         [AppDelegate addLogText:[NSString stringWithFormat:@"[Bootstrap]: KFD ran succesfully: %llx", kfd]];
-    
-        if(!running_IO) {free_memory(mem);}
         
+        if(!running_IO) {free_memory(mem);}
+    }
+  /*
         bool replaced = enable_sbInjection(kfd, 1); // initiate SpringBoard Injection
         if(replaced == false) {
             [AppDelegate showMesage:Localized(@"Bootstrap was unable to setup SpringBoard Injection. Please reboot and try again.") title:Localized(@"Error")];
@@ -434,11 +442,11 @@ void bootstrapAction()
         
         [AppDelegate showMesage:Localized(@"KFD = success, WE'RE COOKING ") title:Localized(@"Complete")];
         kclose(kfd);
+   
         return;
-        
-    });
+        */
     
-    /*
+    
     if(isSystemBootstrapped())
     {
         ASSERT(checkBootstrapVersion()==false);
@@ -523,16 +531,46 @@ void bootstrapAction()
             ASSERT([[NSString new] writeToFile:jbroot(@"/var/mobile/.tweakenabled") atomically:YES encoding:NSUTF8StringEncoding error:nil]);
         }
      
-step2:;
+        if(![[NSFileManager defaultManager] fileExistsAtPath:jbroot(@"/.enableSB")]) {
+            
+            StepIncrement();
+            
+            UIAlertController *alert = [UIAlertController alertControllerWithTitle:Localized(@"Rerun") message:Localized(@"Stage 1 is complete. After your device resprings, rerun BootStrap G3n3sis again to enable SpringBoard tweaks") preferredStyle:UIAlertControllerStyleAlert];
+            [alert addAction:[UIAlertAction actionWithTitle:Localized(@"Ok") style:UIAlertActionStyleDestructive handler:^(UIAlertAction *action) {
+                [generator impactOccurred];
+                [AppDelegate addLogText:Localized(@"respring now...")]; sleep(1);
+                kclose(kfd);
+                respringAction();
+            }]];
+            
+            [AppDelegate showAlert:alert];
+        } else {
+            
+            bool replaced = enable_sbInjection(kfd, 1); // initiate SpringBoard Injection
+            if(replaced == false) {
+                [AppDelegate showMesage:Localized(@"Bootstrap was unable to setup SpringBoard Injection. Please reboot and try again.") title:Localized(@"Error")];
+                [AppDelegate addLogText:Localized(@"ERR: SpringBoard Injection setup failed")];
+                return;
+            } else {
+                [AppDelegate addLogText:Localized(@"SprinBoard Injection has been set")];
+                // reboot userspace
+                status = userspaceReboot();
+                kclose(kfd);
+                if(status != 0) {
+                    [AppDelegate showMesage:[NSString stringWithFormat:@"Unable to Userspace Reboot: %d", status] title:Localized(@"Error")];
+                    [AppDelegate addLogText:Localized(@"ERR: Userspace reboot failed")];
+                    return;
+                }
+            }
+        }
 
         [generator impactOccurred];
         [AppDelegate addLogText:Localized(@"respring now...")]; sleep(1);
 
          status = spawnBootstrap((char*[]){"/usr/bin/sbreload", NULL}, &log, &err);
         if(status!=0) [AppDelegate showMesage:[NSString stringWithFormat:@"%@\n\nstderr:\n%@",log,err] title:[NSString stringWithFormat:@"code(%d)",status]];
-
     });
-     */
+     
 }
 
 

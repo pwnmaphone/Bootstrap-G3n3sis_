@@ -26,6 +26,8 @@ NSString* rootfsPrefix(NSString* path);
 
 NSString* getBootSession();
 
+int userspaceReboot(void);
+
 int spawn(const char* path, const char** argv, const char** envp, void(^std_out)(char*,int), void(^std_err)(char*,int));
 
 int spawnBootstrap(const char** argv, NSString** stdOut, NSString** stdErr);
