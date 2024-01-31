@@ -394,8 +394,7 @@ BOOL opensshAction(BOOL enable)
 
 void bootstrapAction()
 {
-    uint64_t kfd = 0;
-    
+  /*
     if([[NSFileManager defaultManager] fileExistsAtPath:jbroot(@"/.enableSB")]) {
         uint64_t* mem = NULL;
         const char *Exploit = NSProcessInfo.processInfo.operatingSystemVersion.majorVersion < 16 ? "KFDIO" : "KFD";
@@ -429,6 +428,7 @@ void bootstrapAction()
         
         if(!running_IO) {free_memory(mem);}
     }
+   */
   /*
         bool replaced = enable_sbInjection(kfd, 1); // initiate SpringBoard Injection
         if(replaced == false) {
@@ -495,6 +495,42 @@ void bootstrapAction()
     [AppDelegate showHudMsg:Localized(@"Bootstrapping")];
 
     dispatch_async(dispatch_get_global_queue(0, 0), ^{
+        
+        [AppDelegate addLogText:Localized(@"**** Starting Bootstrap Process ****")];
+        SYSLOG("\n\n\n **** Starting Bootstrap Process ****\n\n\n");
+        
+        uint64_t kfd = 0;
+        
+        if([[NSFileManager defaultManager] fileExistsAtPath:jbroot(@"/.enableSB")]) {
+            uint64_t* mem = NULL;
+            const char *Exploit = NSProcessInfo.processInfo.operatingSystemVersion.majorVersion < 16 ? "KFDIO" : "KFD";
+            
+            if(strcmp(Exploit, "KFDIO") != 0) {
+                mem = Hog_memory();
+                if(mem == -1) {
+                    SYSLOG("[warning]: Memory hogging failed, but will try kernel exploit anyway");
+                    [AppDelegate addLogText:Localized(@"[warning]: Memory hogging failed, but will try kerel exploit anyway")];
+                    sleep(3);
+                } else {
+                    [AppDelegate addLogText:Localized(@"[Bootstrap]: HogMemory ran successfully")];
+                    sleep(3);
+                }
+            }
+            int kfd_pages = (hogged_memory == true ? 3079:2048);
+            
+            [AppDelegate addLogText:[NSString stringWithFormat:@"[Bootstrap]: Running %s exploit, using %d pages", Exploit, kfd_pages]];
+            kfd = exploit_runner(Exploit, kfd_pages);
+            if(kfd == 0) {
+                [AppDelegate showMesage:Localized(@"The KFD exploit failed. Please reboot and try again.") title:Localized(@"Error")];
+                [AppDelegate addLogText:Localized(@"[Bootstrap]: ERR: kfd exploit failed")];
+                return;
+            }
+            
+            SYSLOG("kfd success: %llx", kfd);
+            [AppDelegate addLogText:[NSString stringWithFormat:@"[Bootstrap]: KFD ran succesfully: %llx", kfd]];
+            
+            if(!running_IO) {free_memory(mem);}
+        }
 
         const char* argv[] = {NSBundle.mainBundle.executablePath.fileSystemRepresentation, "bootstrap", NULL};
         int status = spawn(argv[0], argv, environ, ^(char* outstr, int length){
