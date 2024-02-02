@@ -43,4 +43,5 @@ before-package::
 	cp ./packages/Bootstrap.tipa ./.theos/_/tmp/
 
 after-install::
+# TODO: just add build.sh in here 
 	install.exec 'uiopen -b com.roothide.Bootstrap'

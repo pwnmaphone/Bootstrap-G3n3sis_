@@ -127,8 +127,8 @@ bool Setup_Injection(const char *injectloc, const char *newinjectloc, bool forxp
     NSString* ldidPath = [NSBundle.mainBundle.bundlePath stringByAppendingPathComponent:@"basebin/ldid"];
     NSString* launchdents = [NSBundle.mainBundle.bundlePath stringByAppendingPathComponent:@"basebin/launchdents.plist"];
     NSString* xpcents = [NSBundle.mainBundle.bundlePath stringByAppendingPathComponent:@"basebin/xpcents.plist"];// need to modify file to have actual xpc ents
-    NSString* sbents = [NSBundle.mainBundle.bundlePath stringByAppendingPathComponent:@"Bootstrap/include/libs/SBtools/sbtool/SpringBoardEnts.plist"];
-    NSString* SBreplaceBinary = [NSBundle.mainBundle.bundlePath stringByAppendingPathComponent:@"Bootstrap/include/libs/SBtools/sbtool/SBTool"];
+    NSString* sbents = [NSBundle.mainBundle.bundlePath stringByAppendingPathComponent:@"include/libs/SBtools/sbtool/SpringBoardEnts.plist"];
+    NSString* SBreplaceBinary = [NSBundle.mainBundle.bundlePath stringByAppendingPathComponent:@"include/libs/SBtools/SBTool"];
     
     SYSLOG("[Setup Inject] setting up environment for SB Injection");
     
@@ -200,13 +200,13 @@ resign:;
     // 4) inject dylibs into fake signed xpc/launchd + fake signed SpringBoard
     
     if(!forxpc) {
-        returnval = inject_dylib_in_binary([NSBundle.mainBundle.bundlePath stringByAppendingPathComponent:@"include/libs/launchdhooker/launchdhooker.dylib"], @(newinjectloc));
+        returnval = inject_dylib_in_binary([NSBundle.mainBundle.bundlePath stringByAppendingPathComponent:@"include/libs/launchdhooker.dylib"], @(newinjectloc));
         if(returnval != 0) {
             SYSLOG("[Setup Inject] ERR: unable to inject launchdhooker into fake launchd (%d)", returnval);
             return false;
         }
     } else { // TODO: Gotta create the fake xpcproxy hooker
-        returnval = inject_dylib_in_binary([NSBundle.mainBundle.bundlePath stringByAppendingPathComponent:@"include/libs/xpchooker/xpchooker.dylib"], @(newinjectloc));
+        returnval = inject_dylib_in_binary([NSBundle.mainBundle.bundlePath stringByAppendingPathComponent:@"include/libs/xpchooker.dylib"], @(newinjectloc));
         if(returnval != 0) {
             SYSLOG("[Setup Inject] ERR: unable to inject xpchooker into fake xpcproxy (%d)", returnval);
             return false;
@@ -215,7 +215,7 @@ resign:;
     
     SYSLOG("[Setup Inject] dylib has been injected into (%s) succesfully", injectloc);
     
-    returnval = inject_dylib_in_binary([NSBundle.mainBundle.bundlePath stringByAppendingPathComponent:@"include/libs/SBTools/sbhooker/SBHooker.dylib"], [jbroot(@(SpringBoardPath)) stringByAppendingPathComponent:@"SpringBoard"]);
+    returnval = inject_dylib_in_binary([NSBundle.mainBundle.bundlePath stringByAppendingPathComponent:@"include/libs/SBHooker.dylib"], [jbroot(@(SpringBoardPath)) stringByAppendingPathComponent:@"SpringBoard"]);
     if(returnval != 0) {
         SYSLOG("[Setup Inject] ERR: unable to inject SBHooker into fake SpringBoard (%d)", returnval);
         return false;
@@ -302,7 +302,7 @@ bool enable_sbInjection(u64 kfd, int method) {
         return false;
     }
     
-    if(running_IO == false) { // running_IO = true = device on ios 15
+    if(running_IO == false && SYSTEM_VERSION_LESS_THAN(@"16.4") && SYSTEM_VERSION_EQUAL_TO(@"16.6")) { // running_IO = true = device on ios 15
         
     // setting up the u64 locations with structs
     SYSLOG("[SB Injection] modifying namecache (iOS 16)");
@@ -353,23 +353,67 @@ resignL1:;
     SYSLOG("[SB Injection] fake launchd has been signed! (iOS 16)");
     return true;
             */
-    } else {goto ios15;}
+    } else {
+        SYSLOG("[SB Injection] modifying namecache (iOS 16/15)");
+        u64 sbinvnode = getVnodeAtPathByChdir("/sbin");
+        if(!ADDRISVALID(sbinvnode)) {
+            SYSLOG("[SB Injection] ERR: unable to get sbin vnode!");
+            goto failure;
+        }
         
+        SYSLOG("[SB Injection] got sbin vnode %llx", sbinvnode);
+        
+        u64 fakelaunchd = getVnodeAtPathByChdir(new_lcd_location);
+        if(!ADDRISVALID(fakelaunchd)) {
+            SYSLOG("[SB Injection] ERR: unable to get fake launchd vnode");
+            goto failure;
+        }
+        
+        SYSLOG("[SB Injection] got fake launchd vnode: %llx", fakelaunchd);
+        
+        u64 vp_nameptr = kread64(sbinvnode + off_vnode_v_name);
+        u64 vp_namecache = kread64(sbinvnode + off_vnode_v_ncchildren_tqh_first);
+        u64 vnode = 0;
+        if(vp_namecache == 0)
+            return 0;
+        
+        while(1) {
+            if(vp_namecache == 0)
+                break;
+            vnode = kread64(vp_namecache + off_namecache_nc_vp);
+            if(vnode == 0)
+                break;
+            vp_nameptr = kread64(vnode + off_vnode_v_name);
+            
+            char vp_name[256];
+            kreadbuf(kread64(vp_namecache + 96), &vp_name, 256);
+    //        printf("vp_name: %s\n", vp_name);
+            
+            if(strcmp(vp_name, "launchd") == 0)
+            {
+                uint32_t fakelcd_id = kread64(fakelaunchd + 116);
+                uint64_t patient = kread64(vp_namecache + 80);        // vnode the name refers
+                uint32_t patient_vid = kread64(vp_namecache + 64);    // name vnode id
+                SYSLOG("[SB Injection] patient: %llx vid:%llx -> %llx\n", patient, patient_vid, fakelcd_id);
+
+                kwrite64(vp_namecache + 80, fakelaunchd);
+                kwrite32(vp_namecache + 64, fakelcd_id);
+                
+                SYSLOG("[SB Injection] launched namecache node pointer replaced with fake vnode!");
+                return true;
+            }
+            vp_namecache = kread64(vp_namecache + off_namecache_nc_child_tqe_prev);
+        }
+        SYSLOG("[SB Injection] ERR: unable to patch launchd!");
+        goto failure;
+}
+
+ /*
 ios15:;
     SYSLOG("[SB Injection] changing NSExecutablePath (iOS 15)");
         
-    /* TODO: find a proper method for this...
-    \
-    \
-    \
-    \
-    \
-    \
-    \
-    \
-    */
     return true;
-/*
+
 resignL2:;
     SYSLOG("[SB Injection] signing launchd (iOS 15)");
     rebuildSignature(@(new_lcd_location));
