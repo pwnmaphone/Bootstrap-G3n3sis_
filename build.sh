@@ -40,7 +40,7 @@ then
 
 rm -rf .theos
 # continue from here
-echo "[MAKE BOOTSTRAP] dylibs were moved successfully"
+echo "[MAKE BOOTSTRAP] dylibs moved successfully, running [COPY BOOTSTRAP]"
 cd "$SCRIPT_DIR"
 chmod ++x copy.sh
 ./copy.sh

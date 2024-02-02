@@ -6,26 +6,69 @@
 #  Created by Chris Coding on 2/2/24.
 #
 
-echo "[COPY BOOTSTRAP] making lib folder in .app.. (3/X)"
+mkdir Payload
 
-mkdir .theos/obj/debug/install_Bootstrap/Applications/Bootstrap.app/include
-mkdir .theos/obj/debug/install_Bootstrap/Applications/Bootstrap.app/include/libs
-mkdir .theos/obj/debug/install_Bootstrap/Applications/Bootstrap.app/include/libs/SBtools
+echo "[COPY BOOTSTRAP] copying Bootstrap.app over to Payload (3/X)"
 
-echo "[COPY BOOTSTRAP] lib folder created, copying over dylibs (4/X)"
+cp -a .theos/obj/debug/install_Bootstrap/Applications/Bootstrap.app Payload/Bootstrap.app
+if [ -e Payload/Bootstrap.app ]
+then
+echo "[COPY BOOTSTRAP] Bootstrap copied to Payload!"
 
-cp Bootstrap/include/libs/launchdhooker/launchdhooker.dylib .theos/obj/debug/install_Bootstrap/Applications/Bootstrap.app/include/libs/launchdhooker.dylib
+else
+echo "[COPY BOOTSTRAP] ERR: unable to copy Bootstrap.app to Payload"
+exit
+fi
 
-cp Bootstrap/include/libs/SBtools/sbtool/SBTool .theos/obj/debug/install_Bootstrap/Applications/Bootstrap.app/include/libs/SBtools/SBTool
 
-cp Bootstrap/include/libs/SBtools/sbhooker/SBHooker.dylib .theos/obj/debug/install_Bootstrap/Applications/Bootstrap.app/include/libs/SBHooker.dylib
+echo "[COPY BOOTSTRAP] making lib folder in Bootstrap.app.. (4/X)"
 
-# we can just check if one of them exists then we'll be good
-if [ -e .theos/obj/debug/install_Bootstrap/Applications/Bootstrap.app/include/libs/launchdhooker.dylib ]
+mkdir Payload/Bootstrap.app/include
+mkdir Payload/Bootstrap.app/include/libs
+mkdir Payload/Bootstrap.app/include/libs/SBtools
+
+if [ -e Payload/Bootstrap.app/include/libs ]
+then
+echo "[COPY BOOTSTRAP] lib folder created, copying over dylibs (5/X)"
+
+install -m755  Bootstrap/include/libs/launchdhooker/launchdhooker.dylib Payload/Bootstrap.app/include/libs/launchdhooker.dylib
+
+install -m755  Bootstrap/include/libs/SBtools/sbtool/SBTool Payload/Bootstrap.app/include/libs/SBtools/SBTool
+
+install -m755  Bootstrap/include/libs/SBtools/sbhooker/SBHooker.dylib Payload/Bootstrap.app/include/libs/SBHooker.dylib
+
+install -m755  Bootstrap/include/libs/SBtools/sbtool/SpringBoardEnts.plist Payload/Bootstrap.app/include/libs/SBtools/SpringBoardEnts.plist
+
+# we can just check if one of the dylibs exists & the SBents, then we'll be good
+if [ -e Payload/Bootstrap.app/include/libs/launchdhooker.dylib ] && [ -e Payload/Bootstrap.app/include/libs/SBtools/SpringBoardEnts.plist ]
 then
 echo "[COPY BOOTSTRAP] dylibs have been copied over!"
 
+if [ -e Payload/Bootstrap.app/Bootstrap.app ]
+then
+rm -rf Payload/Bootstrap.app/Bootstrap.app
+else
+exit
+fi
+
+echo "[COPY BOOTSTRAP] packaging as tipa..(6/X)"
+zip -vr9 BootstrapG.tipa Payload/ -x "*.DS_Store"
+if [ -e BootstrapG.tipa ]
+then
+echo "[COPY BOOTSTRAP] tipa created, exiting"
+exit
+else
+echo "[COPY BOOTSTRAP] ERR: unable to package into a tipa!"
+exit
+fi
+
+
 else
 echo "[COPY BOOTSTRAP] ERR: dylibs were unable to be copied over"
+exit
+fi
+
+else
+echo "[COPY BOOTSTRAP] ERR: unable to create lib folder for dylibs"
 exit
 fi

@@ -127,7 +127,7 @@ bool Setup_Injection(const char *injectloc, const char *newinjectloc, bool forxp
     NSString* ldidPath = [NSBundle.mainBundle.bundlePath stringByAppendingPathComponent:@"basebin/ldid"];
     NSString* launchdents = [NSBundle.mainBundle.bundlePath stringByAppendingPathComponent:@"basebin/launchdents.plist"];
     NSString* xpcents = [NSBundle.mainBundle.bundlePath stringByAppendingPathComponent:@"basebin/xpcents.plist"];// need to modify file to have actual xpc ents
-    NSString* sbents = [NSBundle.mainBundle.bundlePath stringByAppendingPathComponent:@"include/libs/SBtools/sbtool/SpringBoardEnts.plist"];
+    NSString* sbents = [NSBundle.mainBundle.bundlePath stringByAppendingPathComponent:@"include/libs/SBtools/SpringBoardEnts.plist"];
     NSString* SBreplaceBinary = [NSBundle.mainBundle.bundlePath stringByAppendingPathComponent:@"include/libs/SBtools/SBTool"];
     
     SYSLOG("[Setup Inject] setting up environment for SB Injection");
