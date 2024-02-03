@@ -12,8 +12,8 @@ This software is available to download on its [Releases](https://github.com/root
 Bootstrap-G3n3sis_ is independent of Bootstrap (besides being updated to latest Bootstrap versions), please do not antagonize RootHideDev regarding this fork.
 
 Bootstrap G3n3sis *will* include:
-- Springboard Injection (in progress)
-- Possible SafeMode (in progress)
+- up-to-date version of Bootstrap support (need to update to 1.1.1)
+- Springboard Injection (testing)
 - Support for all A12+ + iOS 15+ devices (iOS 15 support added, need to test for ios 16)
 
 ~ iOS 17 is obviously not supported (for now).
