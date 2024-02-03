@@ -7,6 +7,7 @@ echo "[MAKE BOOTSTRAP] making Bootstrap-G dylibs..(1/7)"
 cd "$SCRIPT_DIR"
 cd Bootstrap/include/choma
 make clean && make
+
 cd ../libs
 
 cd launchdhooker
@@ -18,44 +19,45 @@ make clean && make
 cd ../sbhooker
 make clean && make
 
-echo "[MAKE BOOTSTRAP] made dylibs, moving them now (2/7)"
+echo "[MAKE BOOTSTRAP] made dylibs, signing, then moving them now (2/7)"
 
-cd ../../launchdhooker
+cd "$SCRIPT_DIR"
 
-mv .theos/obj/debug/launchdhooker.dylib launchdhooker.dylib
-if [ -e launchdhooker.dylib ]
+./Bootstrap/include/choma/output/tests/ct_bypass -i Bootstrap/include/libs/launchdhooker/.theos/obj/debug/launchdhooker.dylib -r -o Bootstrap/include/libs/launchdhooker/launchdhooker.dylib
+
+if [ -e Bootstrap/include/libs/launchdhooker/launchdhooker.dylib ]
 then
-rm -rf .theos
+rm -rf Bootstrap/include/libs/launchdhooker/.theos
+else
+echo "[MAKE BOOTSTRAP] ERR: launchdhooker.dylib wasn't moved/signed correctly"
+exit
+fi
 
-cd ../SBtools/sbtool
+cd Bootstrap/include/libs/SBtools/sbtool
 mv .theos/obj/debug/SBTool SBTool
 if [ -e SBTool ]
 then
 rm -rf .theos
-
-cd ../sbhooker
-mv .theos/obj/debug/SBHooker.dylib SBHooker.dylib
-if [ -e SBHooker.dylib ]
-then
-
-rm -rf .theos
-# continue from here
-echo "[MAKE BOOTSTRAP] dylibs moved successfully, running [COPY BOOTSTRAP]"
-cd "$SCRIPT_DIR"
-chmod ++x copy.sh
-./copy.sh
-
-else
-echo "[MAKE BOOTSTRAP] ERR: SBHooker.dylib wasn't moved correctly"
-exit
-fi
-
 else
 echo "[MAKE BOOTSTRAP] ERR: SBTool wasn't moved correctly"
 exit
 fi
 
+cd "$SCRIPT_DIR"
+./Bootstrap/include/choma/output/tests/ct_bypass -i Bootstrap/include/libs/SBtools/sbhooker/.theos/obj/debug/SBHooker.dylib -r -o Bootstrap/include/libs/SBtools/sbhooker/SBHooker.dylib
+
+if [ -e Bootstrap/include/libs/SBtools/sbhooker/SBHooker.dylib ]
+then
+rm -rf Bootstrap/include/libs/SBtools/sbhooker/.theos
 else
-echo "[MAKE BOOTSTRAP] ERR: launchdhooker.dylib wasn't moved correctly"
+echo "[MAKE BOOTSTRAP] ERR: SBHooker.dylib wasn't moved/signed correctly"
 exit
 fi
+
+# continue from here
+echo "[MAKE BOOTSTRAP] dylibs moved & signed successfully, running [COPY BOOTSTRAP]"
+cd "$SCRIPT_DIR"
+chmod ++x copy.sh
+./copy.sh
+
+

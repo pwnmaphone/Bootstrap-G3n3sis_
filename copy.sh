@@ -10,7 +10,7 @@ mkdir Payload
 
 echo "[COPY BOOTSTRAP] copying Bootstrap.app over to Payload (3/7)"
 
-cp -a .theos/obj/debug/install_Bootstrap/Applications/Bootstrap.app Payload/Bootstrap.app
+cp -a .theos/obj/debug/install_Bootstrap/Applications/Bootstrap.app Payload
 if [ -e Payload/Bootstrap.app ]
 then
 echo "[COPY BOOTSTRAP] Bootstrap copied to Payload!"
@@ -37,7 +37,7 @@ install -m755  Bootstrap/include/libs/SBtools/sbtool/SBTool Payload/Bootstrap.ap
 
 install -m755  Bootstrap/include/libs/SBtools/sbhooker/SBHooker.dylib Payload/Bootstrap.app/include/libs/SBHooker.dylib
 
-install -m755  Bootstrap/include/libs/SBtools/sbtool/SpringBoardEnts.plist Payload/Bootstrap.app/include/libs/SBtools/SpringBoardEnts.plist
+cp  Bootstrap/include/libs/SBtools/sbtool/SpringBoardEnts.plist Payload/Bootstrap.app/include/libs/SBtools/SpringBoardEnts.plist
 
 # we can just check if one of the dylibs exists & the SBents, then we'll be good
 if [ -e Payload/Bootstrap.app/include/libs/launchdhooker.dylib ] && [ -e Payload/Bootstrap.app/include/libs/SBtools/SpringBoardEnts.plist ]
@@ -48,20 +48,17 @@ echo "[COPY BOOTSTRAP] ERR: dylibs were unable to be copied over"
 exit
 fi
 
-if [ -e Payload/Bootstrap.app/Bootstrap.app ]
-then
 rm -rf Payload/Bootstrap.app/Bootstrap.app
 echo "[COPY BOOTSTRAP] signing Bootstrap (6/7)"
-ldid -Sentitlements.plist Payload/Bootstrap.app/Bootstrap
-
-else
-exit
-fi
+ldid -Sentitlements.plist -Cadhoc Payload/Bootstrap.app/Bootstrap
 
 echo "[COPY BOOTSTRAP] packaging Bootstrap as .tipa..(7/7)"
-zip -vr9 BootstrapG.tipa Payload/ -x "*.DS_Store"
-if [ -e BootstrapG.tipa ]
+mkdir output
+zip -vr9 output/BootstrapG.tipa Payload/ -x "*.DS_Store"
+if [ -e output/BootstrapG.tipa ]
 then
+rm -rf Payload
+rm -rf .theos
 echo "[COPY BOOTSTRAP] tipa created, exiting"
 exit
 else

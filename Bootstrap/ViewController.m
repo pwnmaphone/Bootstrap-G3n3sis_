@@ -155,6 +155,15 @@ void initFromSwiftUI()
     }
 }
 
+BOOL StepIncrement() {
+    kern_return_t k = [[NSFileManager defaultManager] createFileAtPath:jbroot(@"/.enableSB") contents:nil attributes:nil];
+    if(k != KERN_SUCCESS && ![[NSFileManager defaultManager] fileExistsAtPath:jbroot(@"/.enableSB")]) {
+        SYSLOG("Unable to increment next step!");
+        return NO;
+    }
+    return [[NSFileManager defaultManager] fileExistsAtPath:jbroot(@"/.enableSB")] ? YES:NO;
+}
+
 @end
 
 BOOL checkTSVersion()
@@ -191,15 +200,6 @@ BOOL SBInjectionEnvironmentCheck() {
     return isinjected ? YES:NO;
 }
  */
-
-BOOL StepIncrement() {
-    kern_return_t k = [[NSFileManager defaultManager] createFileAtPath:jbroot(@"/.enableSB") contents:nil attributes:nil];
-    if(k != KERN_SUCCESS && ![[NSFileManager defaultManager] fileExistsAtPath:jbroot(@"/.enableSB")]) {
-        SYSLOG("Unable to increment next step!");
-        return NO;
-    }
-    return [[NSFileManager defaultManager] fileExistsAtPath:jbroot(@"/.enableSB")] ? YES:NO;
-}
 
 void respringAction()
 {
@@ -448,8 +448,8 @@ void bootstrapAction()
         SYSLOG("\n\n\n **** Starting Bootstrap Process ****\n\n\n");
         
         uint64_t kfd = 0;
-        
-        if([[NSFileManager defaultManager] fileExistsAtPath:jbroot(@"/.enableSB")]) {
+        bool go = [[NSFileManager defaultManager] fileExistsAtPath:jbroot(@"/.enableSB")] ? true:false;
+        if(go) {
             uint64_t* mem = NULL;
             const char *Exploit = NSProcessInfo.processInfo.operatingSystemVersion.majorVersion < 16 ? "KFDIO" : "KFD";
             
