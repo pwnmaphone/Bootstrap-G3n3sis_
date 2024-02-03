@@ -2,7 +2,7 @@
 
 SCRIPT_DIR=$( dirname -- "$( readlink -f -- "$0"; )"; )
 
-echo "[MAKE BOOTSTRAP] making Bootstrap-G dylibs..(1/X)"
+echo "[MAKE BOOTSTRAP] making Bootstrap-G dylibs..(1/7)"
 # Gonna build choma first
 cd "$SCRIPT_DIR"
 cd Bootstrap/include/choma
@@ -18,7 +18,7 @@ make clean && make
 cd ../sbhooker
 make clean && make
 
-echo "[MAKE BOOTSTRAP] made dylibs, moving them now (2/X)"
+echo "[MAKE BOOTSTRAP] made dylibs, moving them now (2/7)"
 
 cd ../../launchdhooker
 

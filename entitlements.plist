@@ -7,7 +7,6 @@
 	<key>com.apple.private.security.no-sandbox</key>
 	<true/>
     
-    <!---app can't be launched if developer mode not enabled
 	<key>com.apple.security.get-task-allow</key>
 	<true/>
 	<key>get-task-allow</key>
@@ -15,8 +14,48 @@
 	<key>task_for_pid-allow</key>
 	<true/>
 	<key>run-unsigned-code</key>
-	<true/>-->
+	<true/>
+	
     
+	<key>com.apple.private.xpc.domain-extension</key>
+	<true/>
+	<key>com.apple.private.xpc.domain-extension.proxy</key>
+	<true/>
+	<key>com.apple.private.xpc.launchd.app-state-manager</key>
+	<true/>
+	<key>com.apple.private.xpc.launchd.enable-disable-system-services</key>
+	<true/>
+	<key>com.apple.private.xpc.launchd.event-monitor</key>
+	<true/>
+	<key>com.apple.private.xpc.launchd.loginitem-bootstrapper</key>
+	<true/>
+	<key>com.apple.private.xpc.launchd.loginitem-outside-bundle</key>
+	<true/>
+	<key>com.apple.private.xpc.launchd.obliterator</key>
+	<true/>
+	<key>com.apple.private.xpc.launchd.per-user-create.mbsetupuser</key>
+	<true/>
+	<key>com.apple.private.xpc.launchd.per-user-lookup</key>
+	<true/>
+	<key>com.apple.private.xpc.launchd.reboot</key>
+	<true/>
+	<key>com.apple.private.xpc.launchd.service-hold</key>
+	<true/>
+	<key>com.apple.private.xpc.launchd.userspace-reboot</key>
+	<true/>
+	<key>com.apple.private.xpc.launchd.userspace-reboot-now</key>
+	<true/>
+	<key>com.apple.private.xpc.persona-creator</key>
+	<true/>
+	<key>com.apple.private.xpc.persona-manager</key>
+	<true/>
+	<key>com.apple.private.persona-mgmt</key>
+	<true/>
+	<key>com.apple.private.xpc.service-attach</key>
+	<true/>
+	<key>com.apple.private.xpc.service-configure</key>
+	<true/>
+
 	<key>proc_info-allow</key>
 	<true/>
     
@@ -53,6 +92,36 @@
 
     <key>com.apple.lsapplicationworkspace.rebuildappdatabases</key>
     <true/>
+		<key>com.apple.security.iokit-user-client-class</key>
+	<array>
+		<string>AGXDevice</string>
+		<string>AGXCommandQueue</string>
+		<string>AGXSharedUserClient</string>
+		<string>AGXDeviceUserClient</string>
+		<string>iokit-open-user-client</string>
+		<string>IOSurfaceRootUserClient</string>
+	</array>
+	<key>com.apple.developer.driverkit</key>
+	<true/>
+	<key>com.apple.developer.driverkit.userclient-access</key>
+	<true/>
+	<key>com.apple.private.memorystatus</key>
+	<true/>
+	<key>com.apple.security.exception.mach-lookup.global-name</key>
+	<array>
+		<string>com.apple.mmaintenanced</string>
+		<string>com.apple.memory-maintenance</string>
+	</array>
+	<key>com.apple.AutoWake-write-access</key>
+	<true/>
+	<key>com.apple.springboard.wallpaper-access</key>
+	<true/>
+	<key>com.apple.features.all-access</key>
+	<true/>
+	<key>com.apple.springboard.appbackgroundstyle</key>
+	<true/>
+	<key>com.apple.springboard.wallpaperAnimationSuspension</key>
+	<true/>
     
 </dict>
 </plist>
