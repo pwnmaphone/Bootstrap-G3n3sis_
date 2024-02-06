@@ -23,11 +23,11 @@ Bootstrap G3n3sis *will* include:
 
 Bootstrap G3n3sis_ will always have a .tipa created for you to simply install. However, if you want to (for whatever reason) build it yourself:
 
-1) cd (Project Directory)
+1) `cd (Project Directory)`
 
-2) make
+2) `make`
 
-3) ./build.sh
+3) `./build.sh`
 
 4) new built tipa should now be in the "output" folder
 
