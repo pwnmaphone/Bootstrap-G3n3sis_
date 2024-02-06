@@ -3,6 +3,8 @@
 @interface ViewController : UIViewController
 @end
 
+extern BOOL runSBINJECTOR;
+
 void initFromSwiftUI();
 void respringAction();
 void rebuildappsAction();

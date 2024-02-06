@@ -33,13 +33,13 @@ echo "[MAKE BOOTSTRAP] ERR: launchdhooker.dylib wasn't moved/signed correctly"
 exit
 fi
 
-cd Bootstrap/include/libs/SBtools/sbtool
-mv .theos/obj/debug/SBTool SBTool
-if [ -e SBTool ]
+./Bootstrap/include/choma/output/tests/ct_bypass -i Bootstrap/include/libs/SBtools/sbtool/.theos/obj/debug/SBTool -r -o Bootstrap/include/libs/SBtools/sbtool/SBTool
+
+if [ -e Bootstrap/include/libs/SBtools/sbtool/SBTool ]
 then
-rm -rf .theos
+rm -rf Bootstrap/include/libs/SBtools/sbtool/.theos
 else
-echo "[MAKE BOOTSTRAP] ERR: SBTool wasn't moved correctly"
+echo "[MAKE BOOTSTRAP] ERR: SBTool wasn't moved/signed correctly"
 exit
 fi
 

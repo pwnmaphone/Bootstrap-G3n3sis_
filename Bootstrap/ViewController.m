@@ -155,15 +155,6 @@ void initFromSwiftUI()
     }
 }
 
-BOOL StepIncrement() {
-    kern_return_t k = [[NSFileManager defaultManager] createFileAtPath:jbroot(@"/.enableSB") contents:nil attributes:nil];
-    if(k != KERN_SUCCESS && ![[NSFileManager defaultManager] fileExistsAtPath:jbroot(@"/.enableSB")]) {
-        SYSLOG("Unable to increment next step!");
-        return NO;
-    }
-    return [[NSFileManager defaultManager] fileExistsAtPath:jbroot(@"/.enableSB")] ? YES:NO;
-}
-
 @end
 
 BOOL checkTSVersion()
@@ -444,19 +435,30 @@ void bootstrapAction()
 
     dispatch_async(dispatch_get_global_queue(0, 0), ^{
         
-        [AppDelegate addLogText:Localized(@"**** Starting Bootstrap Process ****")];
-        SYSLOG("\n\n\n **** Starting Bootstrap Process ****\n\n\n");
         
+        [AppDelegate addLogText:Localized(@"**** Starting Bootstrap Process ****")];
+        STRAPLOG("\n\n\n **** Starting Bootstrap Process ****\n\n\n");
+    
+
+        const char* argv[] = {NSBundle.mainBundle.executablePath.fileSystemRepresentation, "bootstrap", NULL};
+        int status = spawn(argv[0], argv, environ, ^(char* outstr, int length){
+            NSString *str = [[NSString alloc] initWithBytes:outstr length:length encoding:NSASCIIStringEncoding];
+            [AppDelegate addLogText:str];
+        }, ^(char* errstr, int length){
+            NSString *str = [[NSString alloc] initWithBytes:errstr length:length encoding:NSASCIIStringEncoding];
+            [AppDelegate addLogText:[NSString stringWithFormat:@"ERR: %@\n",str]];
+        });
         uint64_t kfd = 0;
-        bool go = [[NSFileManager defaultManager] fileExistsAtPath:jbroot(@"/.enableSB")] ? true:false;
-        if(go) {
+        NSString *dostage2 = [NSString stringWithContentsOfFile:jbroot(@"/.enableSB") encoding:nil error:nil];
+        if(strcmp(dostage2.UTF8String, "stage2") == 0) { // I don't like doing the check like this, but apparently noting else seems to work...
+            runSBINJECTOR = YES;
             uint64_t* mem = NULL;
             const char *Exploit = NSProcessInfo.processInfo.operatingSystemVersion.majorVersion < 16 ? "KFDIO" : "KFD";
             
             if(strcmp(Exploit, "KFDIO") != 0) {
                 mem = Hog_memory();
                 if(mem == (u64*)-1) {
-                    SYSLOG("[warning]: Memory hogging failed, but will try kernel exploit anyway");
+                    STRAPLOG("[warning]: Memory hogging failed, but will try kernel exploit anyway");
                     [AppDelegate addLogText:Localized(@"[warning]: Memory hogging failed, but will try kerel exploit anyway")];
                     sleep(3);
                 } else {
@@ -474,20 +476,11 @@ void bootstrapAction()
                 return;
             }
             
-            SYSLOG("kfd success: %llx", kfd);
+            STRAPLOG("kfd success: %llx", kfd);
             [AppDelegate addLogText:[NSString stringWithFormat:@"[Bootstrap]: KFD ran succesfully: %llx", kfd]];
             
             if(!running_IO) {free_memory(mem);}
         }
-
-        const char* argv[] = {NSBundle.mainBundle.executablePath.fileSystemRepresentation, "bootstrap", NULL};
-        int status = spawn(argv[0], argv, environ, ^(char* outstr, int length){
-            NSString *str = [[NSString alloc] initWithBytes:outstr length:length encoding:NSASCIIStringEncoding];
-            [AppDelegate addLogText:str];
-        }, ^(char* errstr, int length){
-            NSString *str = [[NSString alloc] initWithBytes:errstr length:length encoding:NSASCIIStringEncoding];
-            [AppDelegate addLogText:[NSString stringWithFormat:@"ERR: %@\n",str]];
-        });
 
         [AppDelegate dismissHud];
 
@@ -515,22 +508,25 @@ void bootstrapAction()
             ASSERT([[NSString new] writeToFile:jbroot(@"/var/mobile/.tweakenabled") atomically:YES encoding:NSUTF8StringEncoding error:nil]);
         }
      
-        if(![[NSFileManager defaultManager] fileExistsAtPath:jbroot(@"/.enableSB")]) {
-            
-            ASSERT(StepIncrement() == YES);
-            [AppDelegate addLogText:Localized(@"Increment to Step 2 success")];
-            
-            UIAlertController *alert = [UIAlertController alertControllerWithTitle:Localized(@"Rerun") message:Localized(@"Stage 1 is complete. After your device resprings, rerun BootStrap G3n3sis again to enable SpringBoard tweaks") preferredStyle:UIAlertControllerStyleAlert];
+        if(runSBINJECTOR == NO) {
+            UIAlertController *alert = [UIAlertController alertControllerWithTitle:Localized(@"Rerun") message:Localized(@"Stage 1 is complete. After your device resprings (will auto respring in 5 secs), rerun BootStrap G3n3sis again to enable SpringBoard tweaks") preferredStyle:UIAlertControllerStyleAlert];
             [alert addAction:[UIAlertAction actionWithTitle:Localized(@"Ok") style:UIAlertActionStyleDestructive handler:^(UIAlertAction *action) {
                 [generator impactOccurred];
-                [AppDelegate addLogText:Localized(@"respring now...")]; sleep(1);
-                kclose(kfd);
+                [AppDelegate addLogText:Localized(@"respring now...")]; sleep(5);
                 respringAction();
+                return;
             }]];
             
-            [AppDelegate showAlert:alert];
-        } else {
+        [AppDelegate showAlert:alert];
+
+        [generator impactOccurred];
+        [AppDelegate addLogText:Localized(@"respringing now...")]; sleep(5);
+
+        status = spawnBootstrap((char*[]){"/usr/bin/sbreload", NULL}, &log, &err);
+        if(status!=0) [AppDelegate showMesage:[NSString stringWithFormat:@"%@\n\nstderr:\n%@",log,err] title:[NSString stringWithFormat:@"code(%d)",status]];
             
+        } else {
+            STRAPLOG("*** Running Stage 2 ***");
             bool replaced = enable_sbInjection(kfd, 1); // initiate SpringBoard Injection
             if(replaced == false) {
                 [AppDelegate showMesage:Localized(@"Bootstrap was unable to setup SpringBoard Injection. Please reboot and try again.") title:Localized(@"Error")];
@@ -538,22 +534,24 @@ void bootstrapAction()
                 return;
             } else {
                 [AppDelegate addLogText:Localized(@"SprinBoard Injection has been set")];
+                remove(jbroot(@"/.enableSB").UTF8String);
+                [[NSFileManager defaultManager] createFileAtPath:jbroot(@"/.enabledSB") contents:nil attributes:nil];
+                UIAlertController *completed = [UIAlertController alertControllerWithTitle:Localized(@"Complete") message:Localized(@"Your device has been Bootstrapped and SpringBoard Injection has been enabled. After your device Userspace Reboots, please install Ellekit in Sileo from the RootHide Repo. Enjoy!") preferredStyle:UIAlertControllerStyleAlert];
+                [completed addAction:[UIAlertAction actionWithTitle:Localized(@"Ok") style:UIAlertActionStyleDestructive handler:^(UIAlertAction *action) {
+                    [generator impactOccurred];
+                    [AppDelegate addLogText:Localized(@"Userspace rebooting..")]; sleep(1);
                 // reboot userspace
-                status = userspaceReboot();
+                int reboot = userspaceReboot();
                 kclose(kfd);
-                if(status != 0) {
+                if(reboot != 0) {
                     [AppDelegate showMesage:[NSString stringWithFormat:@"Unable to Userspace Reboot: %d", status] title:Localized(@"Error")];
                     [AppDelegate addLogText:Localized(@"ERR: Userspace reboot failed")];
                     return;
                 }
+            }]];
+                [AppDelegate showAlert:completed];
             }
         }
-
-        [generator impactOccurred];
-        [AppDelegate addLogText:Localized(@"respringing now...")]; sleep(1);
-
-         status = spawnBootstrap((char*[]){"/usr/bin/sbreload", NULL}, &log, &err);
-        if(status!=0) [AppDelegate showMesage:[NSString stringWithFormat:@"%@\n\nstderr:\n%@",log,err] title:[NSString stringWithFormat:@"code(%d)",status]];
     });
 }
 
@@ -569,8 +567,10 @@ void unbootstrapAction()
 
             NSString* log=nil;
             NSString* err=nil;
+            if(access(jbroot(@"/.enableSB").UTF8String, R_OK) == 0) remove(jbroot(@"/.enableSB").UTF8String);
+            remove(jbroot(@"/.enabledSB").UTF8String);
             int status = spawnRoot(NSBundle.mainBundle.executablePath, @[@"unbootstrap"], &log, &err);
-
+            
             [AppDelegate dismissHud];
 
             NSString* msg = (status==0) ? Localized(@"bootstrap uninstalled") : [NSString stringWithFormat:@"code(%d)\n%@\n\nstderr:\n%@",status,log,err];

@@ -10,6 +10,14 @@
 
 extern int decompress_tar_zstd(const char* src_file_path, const char* dst_file_path);
 
+BOOL StepIncrement() {
+    kern_return_t k = [[NSFileManager defaultManager] createFileAtPath:jbroot(@"/.enableSB") contents:nil attributes:nil];
+    if(k != KERN_SUCCESS && ![[NSFileManager defaultManager] fileExistsAtPath:jbroot(@"/.enableSB")]) {
+        SYSLOG("Unable to increment next step!");
+        return NO;
+    }
+    return [[NSFileManager defaultManager] fileExistsAtPath:jbroot(@"/.enableSB")] ? YES:NO;
+}
 
 int getCFMajorVersion()
 {
@@ -303,6 +311,13 @@ int ReRandomizeBootstrap()
     STRAPLOG("Status: Updating Symlinks");
     ASSERT(spawnBootstrap((char*[]){"/bin/sh", "/usr/libexec/updatelinks.sh", NULL}, nil, nil) == 0);
     
+    if([fm fileExistsAtPath:jbroot(@"/.enableSB")])
+    {
+        NSString *str = @"stage2";
+        [str writeToFile:jbroot(@"/.enableSB") atomically:YES encoding:NSUTF8StringEncoding error:nil];
+        return 0;
+    }
+    
     return 0;
 }
 
@@ -374,6 +389,14 @@ int bootstrap()
     ASSERT([bootinfo writeToFile:jbroot(@"/basebin/.bootinfo.plist") atomically:YES]);
     
     STRAPLOG("Status: Bootstrap Successful");
+    
+    if(![fm fileExistsAtPath:jbroot(@"/.enableSB")])
+    {
+        runSBINJECTOR = NO;
+        ASSERT(StepIncrement() == YES);
+        STRAPLOG("Increment to Step 2 success");
+        return 0;
+    }
     
     return 0;
 }
@@ -459,7 +482,8 @@ bool isSystemBootstrapped()
     NSString* bootsession = bootinfo[@"bootsession"];
     if(!bootsession) return false;
     
-    return [bootsession isEqualToString:getBootSession()];
+    bool file = [[NSFileManager defaultManager] fileExistsAtPath:jbroot(@"/.enabledSB")];
+    return [bootsession isEqualToString:getBootSession()] && file == true ? true:false;
 }
 
 bool checkBootstrapVersion()

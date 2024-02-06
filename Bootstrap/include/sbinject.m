@@ -86,15 +86,15 @@ int inject_dylib_in_binary(NSString* dylibPath, NSString* binarypath) {
     
     NSFileManager* FM = [NSFileManager defaultManager];
     if(![FM fileExistsAtPath:dylibPath] || ![FM fileExistsAtPath:binarypath]) {
-        SYSLOG("[Dylib Inject] ERR: invalid path for dylib/binary");
+        STRAPLOG("[Dylib Inject] ERR: invalid path for dylib/binary");
         return -1;
     }
     
-    SYSLOG("[Dylib Inject] Injecting (%s) into (%s)", (dylibPath).UTF8String, binarypath.UTF8String);
+    STRAPLOG("[Dylib Inject] Injecting (%s) into (%s)", (dylibPath).UTF8String, binarypath.UTF8String);
     FILE *fp = fopen(binarypath.UTF8String, "r+");
     
     if(!fp) {
-        SYSLOG("[Dylib Inject] ERR: unable to read binary");
+        STRAPLOG("[Dylib Inject] ERR: unable to read binary");
         fclose(fp);
         return -2;
     }
@@ -106,12 +106,12 @@ int inject_dylib_in_binary(NSString* dylibPath, NSString* binarypath) {
     
     bool injected = insertLoadEntryIntoBinary(dylibPath, (NSMutableData*)binarypath, mh, LC_LOAD_DYLIB);
     if(!injected) {
-        SYSLOG("[Dylib Inject] ERR: unable to inject (%s) into (%s)!", dylibPath.UTF8String, binarypath.UTF8String);
+        STRAPLOG("[Dylib Inject] ERR: unable to inject (%s) into (%s)!", dylibPath.UTF8String, binarypath.UTF8String);
         fclose(fp);
         return -3;
     }
     
-    SYSLOG("[Dylib Inject] (%s) was injected into (%s) succesfully", dylibPath.UTF8String, binarypath.UTF8String);
+    STRAPLOG("[Dylib Inject] (%s) was injected into (%s) succesfully", dylibPath.UTF8String, binarypath.UTF8String);
     fclose(fp);
     return 0;
 }
@@ -130,15 +130,15 @@ bool Setup_Injection(const char *injectloc, const char *newinjectloc, bool forxp
     NSString* sbents = [NSBundle.mainBundle.bundlePath stringByAppendingPathComponent:@"include/libs/SBtools/SpringBoardEnts.plist"];
     NSString* SBreplaceBinary = [NSBundle.mainBundle.bundlePath stringByAppendingPathComponent:@"include/libs/SBtools/SBTool"];
     
-    SYSLOG("[Setup Inject] setting up environment for SB Injection");
+    STRAPLOG("[Setup Inject] setting up environment for SB Injection");
     
     if([FM fileExistsAtPath:@(newinjectloc)] == 0) {
-        SYSLOG("[Setup Inject] NOTICE: (%s) already exists, we're gonna go ahead and resign then return..", newinjectloc);
+        STRAPLOG("[Setup Inject] NOTICE: (%s) already exists, we're gonna go ahead and resign then return..", newinjectloc);
         goto resign;
     }
     
     if(access(injectloc, F_OK) != 0) {
-        SYSLOG("[Setup Inject] ERR: we can't access %s", injectloc);
+        STRAPLOG("[Setup Inject] ERR: we can't access %s", injectloc);
         return false;
     }
     
@@ -146,11 +146,11 @@ bool Setup_Injection(const char *injectloc, const char *newinjectloc, bool forxp
     
     kr = [FM copyItemAtPath:@(injectloc) toPath:@(newinjectloc) error:&errhandle];
     if(kr != KERN_SUCCESS) {
-        SYSLOG("[Setup Inject] ERR: unable to copy xpc/launchd to path! error-string: (%s)", [[errhandle localizedDescription] UTF8String]);
+        STRAPLOG("[Setup Inject] ERR: unable to copy xpc/launchd to path! error-string: (%s)", [[errhandle localizedDescription] UTF8String]);
         return false;
     }
     
-    SYSLOG("[Setup Inject] copied xpc/launchd binary at path");
+    STRAPLOG("[Setup Inject] copied xpc/launchd binary at path");
     
     
 resign:;
@@ -159,18 +159,18 @@ resign:;
     
     kr = [FM createDirectoryAtURL:jbroot(@"/System/Library/CoreServices/") withIntermediateDirectories:YES attributes:nil error:&errhandle];
     if(kr != KERN_SUCCESS) {
-        SYSLOG("[Setup Inject] ERR: unable to create fake SpringBoard path");
+        STRAPLOG("[Setup Inject] ERR: unable to create fake SpringBoard path");
         return false;
     }
     kr = [FM copyItemAtPath:@(SpringBoardPath) toPath:jbroot(@(SpringBoardPath)) error:&errhandle];
     if(kr != KERN_SUCCESS) {
-        SYSLOG("[Setup Inject] ERR: unable to copy SpringBoard to jbroot path, error-string: (%s)", [[errhandle localizedDescription] UTF8String]);
+        STRAPLOG("[Setup Inject] ERR: unable to copy SpringBoard to jbroot path, error-string: (%s)", [[errhandle localizedDescription] UTF8String]);
         goto setupfailed;
     }
     
     kr = [FM moveItemAtPath:SBreplaceBinary toPath:jbroot([@(SpringBoardPath) stringByAppendingPathComponent:@"SpringBoard"]) error:&errhandle];
     if(kr != KERN_SUCCESS) {
-        SYSLOG("[Setup Inject] ERR: unable to replace SB binary with our own, error-string: (%s)", [[errhandle localizedDescription] UTF8String]);
+        STRAPLOG("[Setup Inject] ERR: unable to replace SB binary with our own, error-string: (%s)", [[errhandle localizedDescription] UTF8String]);
         goto setupfailed;
     }
     
@@ -178,11 +178,11 @@ resign:;
     
     returnval = spawnRoot(ldidPath, @[@"-M", sbents, [jbroot(@(SpringBoardPath)) stringByAppendingPathComponent:@"SpringBoard"]], nil, nil);
     if(returnval != 0) {
-        SYSLOG("[Setup Inject] ERR: unable to sign fake SpringBoard binary (%d)", returnval);
+        STRAPLOG("[Setup Inject] ERR: unable to sign fake SpringBoard binary (%d)", returnval);
         goto setupfailed;
     }
     
-    SYSLOG("[Setup Inject] fake SpringBoard was been signed");
+    STRAPLOG("[Setup Inject] fake SpringBoard was been signed");
     
     // we're gonna sign them with the respective entitlements
     if(forxpc) {
@@ -191,37 +191,37 @@ resign:;
         returnval = spawnRoot(ldidPath, @[@"-M", launchdents, @(newinjectloc)], nil, nil);
     }
     if(returnval != 0) {
-        SYSLOG("[Setup Inject] ERR: an issue occured signing (%s) - (%d)", newinjectloc, returnval);
+        STRAPLOG("[Setup Inject] ERR: an issue occured signing (%s) - (%d)", newinjectloc, returnval);
         return false;
     }
     
-    SYSLOG("[Setup Inject] (%s) - was signed successfully", newinjectloc);
+    STRAPLOG("[Setup Inject] (%s) - was signed successfully", newinjectloc);
     
     // 4) inject dylibs into fake signed xpc/launchd + fake signed SpringBoard
     
     if(!forxpc) {
         returnval = inject_dylib_in_binary([NSBundle.mainBundle.bundlePath stringByAppendingPathComponent:@"include/libs/launchdhooker.dylib"], @(newinjectloc));
         if(returnval != 0) {
-            SYSLOG("[Setup Inject] ERR: unable to inject launchdhooker into fake launchd (%d)", returnval);
+            STRAPLOG("[Setup Inject] ERR: unable to inject launchdhooker into fake launchd (%d)", returnval);
             return false;
         }
     } else { // TODO: Gotta create the fake xpcproxy hooker
         returnval = inject_dylib_in_binary([NSBundle.mainBundle.bundlePath stringByAppendingPathComponent:@"include/libs/xpchooker.dylib"], @(newinjectloc));
         if(returnval != 0) {
-            SYSLOG("[Setup Inject] ERR: unable to inject xpchooker into fake xpcproxy (%d)", returnval);
+            STRAPLOG("[Setup Inject] ERR: unable to inject xpchooker into fake xpcproxy (%d)", returnval);
             return false;
         }
     }
     
-    SYSLOG("[Setup Inject] dylib has been injected into (%s) succesfully", injectloc);
+    STRAPLOG("[Setup Inject] dylib has been injected into (%s) succesfully", injectloc);
     
     returnval = inject_dylib_in_binary([NSBundle.mainBundle.bundlePath stringByAppendingPathComponent:@"include/libs/SBHooker.dylib"], [jbroot(@(SpringBoardPath)) stringByAppendingPathComponent:@"SpringBoard"]);
     if(returnval != 0) {
-        SYSLOG("[Setup Inject] ERR: unable to inject SBHooker into fake SpringBoard (%d)", returnval);
+        STRAPLOG("[Setup Inject] ERR: unable to inject SBHooker into fake SpringBoard (%d)", returnval);
         return false;
     }
     
-    SYSLOG("[Setup Inject] SBHooker has been injected into the fake SpringBoard, we're done here");
+    STRAPLOG("[Setup Inject] SBHooker has been injected into the fake SpringBoard, we're done here");
     return true;
     
 setupfailed:;
@@ -237,7 +237,7 @@ setupfailed:;
 
 bool enable_sbInjection(u64 kfd, int method) {
     
-    SYSLOG("[SB Injection] enabling SB Injection..");
+    STRAPLOG("[SB Injection] enabling SB Injection..");
     
     /* address variables */
     _offsets_init(); // initiate offsets
@@ -273,7 +273,7 @@ bool enable_sbInjection(u64 kfd, int method) {
     if(![FM fileExistsAtPath:@(Bootstrap_patchloc) isDirectory:YES]) {
         kr = mkdir(Bootstrap_patchloc, 0777);
         if(![FM fileExistsAtPath:@(Bootstrap_patchloc) isDirectory:YES] || kr != KERN_SUCCESS) {
-            SYSLOG("[SB Injection] ERR: unable to create patch path");
+            STRAPLOG("[SB Injection] ERR: unable to create patch path");
             return false;
         }
     }
@@ -286,7 +286,7 @@ bool enable_sbInjection(u64 kfd, int method) {
     }
     
     if(!setupyes) {
-        SYSLOG("[SB Injection] ERR: unable to setup injection environment");
+        STRAPLOG("[SB Injection] ERR: unable to setup injection environment");
         return false;
     }
     
@@ -294,30 +294,30 @@ bool enable_sbInjection(u64 kfd, int method) {
         goto xpc;
     }
     
-    SYSLOG("[SB Injection] executing launchd patch");
+    STRAPLOG("[SB Injection] executing launchd patch");
     
     launchvnode = getVnodeAtPath(lcd_origlocation);
     if(!ADDRISVALID(launchvnode)) {
-        SYSLOG("[SB Injection] ERR: unable to get launchd vnode");
+        STRAPLOG("[SB Injection] ERR: unable to get launchd vnode");
         return false;
     }
     
     if(running_IO == false && SYSTEM_VERSION_LESS_THAN(@"16.4") && SYSTEM_VERSION_EQUAL_TO(@"16.6")) { // running_IO = true = device on ios 15
         
     // setting up the u64 locations with structs
-    SYSLOG("[SB Injection] modifying namecache (iOS 16)");
+    STRAPLOG("[SB Injection] modifying namecache (iOS 16)");
     kreadbuf(launchvnode, &lcdfilevnode, sizeof(lcdfilevnode)) ;
     kwrite32(launchvnode+off_vnode_v_usecount, lcdfilevnode.v_usecount+1);
     u64 replace_lcd = getVnodeAtPath(new_lcd_location);
     if(ADDRISVALID(replace_lcd)) {
-        SYSLOG("[SB Injection] ERR: Unable to get fake launchd vnode");
+        STRAPLOG("[SB Injection] ERR: Unable to get fake launchd vnode");
         goto failure;
     }
         
     kreadbuf(replace_lcd, &flcdfilevnode, sizeof(flcdfilevnode));
     kwrite32(replace_lcd+off_vnode_v_usecount, flcdfilevnode.v_usecount+1);
     
-    SYSLOG("[SB Injection] launchd: %11x, fake launchd: %11x", lcdfilevnode, flcdfilevnode);
+    STRAPLOG("[SB Injection] launchd: %11x, fake launchd: %11x", lcdfilevnode, flcdfilevnode);
         
     // 1) get launchd namecache
         
@@ -325,7 +325,7 @@ bool enable_sbInjection(u64 kfd, int method) {
     kreadbuf(launchnc, &nc, sizeof(nc));
     
     if(strcmp(nc.nc_name, "launchd") != 0) {
-        SYSLOG("[SB Injection] ERR: We don't have the correct namecache!");
+        STRAPLOG("[SB Injection] ERR: We don't have the correct namecache!");
         goto failure;
     }
         
@@ -335,16 +335,16 @@ bool enable_sbInjection(u64 kfd, int method) {
     if(!ADDRISVALID(lcdncvp)) {
         lcdncvp = kread64(launchnc + off_namecache_nc_vp);
         if(ADDRISVALID(lcdncvp)) {
-            SYSLOG("[SB Injection] ERR: unable to grab launchd nc vnode");
+            STRAPLOG("[SB Injection] ERR: unable to grab launchd nc vnode");
             goto failure;
         }
     }
         
-    SYSLOG("[SB Injection] replacing namecache vnode pointer");
+    STRAPLOG("[SB Injection] replacing namecache vnode pointer");
         
     kwrite64(lcdncvp, replace_lcd);
         
-    SYSLOG("[SB Injection] launched namecache node pointer replaced with fake vnode!");
+    STRAPLOG("[SB Injection] launched namecache node pointer replaced with fake vnode!");
     return true;
  /*
 resignL1:;
@@ -354,22 +354,22 @@ resignL1:;
     return true;
             */
     } else {
-        SYSLOG("[SB Injection] modifying namecache (iOS 16/15)");
+        STRAPLOG("[SB Injection] modifying namecache (iOS 16/15)");
         u64 sbinvnode = getVnodeAtPathByChdir("/sbin");
         if(!ADDRISVALID(sbinvnode)) {
-            SYSLOG("[SB Injection] ERR: unable to get sbin vnode!");
+            STRAPLOG("[SB Injection] ERR: unable to get sbin vnode!");
             goto failure;
         }
         
-        SYSLOG("[SB Injection] got sbin vnode %llx", sbinvnode);
+        STRAPLOG("[SB Injection] got sbin vnode %llx", sbinvnode);
         
         u64 fakelaunchd = getVnodeAtPathByChdir(new_lcd_location);
         if(!ADDRISVALID(fakelaunchd)) {
-            SYSLOG("[SB Injection] ERR: unable to get fake launchd vnode");
+            STRAPLOG("[SB Injection] ERR: unable to get fake launchd vnode");
             goto failure;
         }
         
-        SYSLOG("[SB Injection] got fake launchd vnode: %llx", fakelaunchd);
+        STRAPLOG("[SB Injection] got fake launchd vnode: %llx", fakelaunchd);
         
         u64 vp_nameptr = kread64(sbinvnode + off_vnode_v_name);
         u64 vp_namecache = kread64(sbinvnode + off_vnode_v_ncchildren_tqh_first);
@@ -394,17 +394,17 @@ resignL1:;
                 uint32_t fakelcd_id = kread64(fakelaunchd + 116);
                 uint64_t patient = kread64(vp_namecache + 80);        // vnode the name refers
                 uint32_t patient_vid = kread64(vp_namecache + 64);    // name vnode id
-                SYSLOG("[SB Injection] patient: %llx vid:%llx -> %llx\n", patient, patient_vid, fakelcd_id);
+                STRAPLOG("[SB Injection] patient: %llx vid:%llx -> %llx\n", patient, patient_vid, fakelcd_id);
 
                 kwrite64(vp_namecache + 80, fakelaunchd);
                 kwrite32(vp_namecache + 64, fakelcd_id);
                 
-                SYSLOG("[SB Injection] launched namecache node pointer replaced with fake vnode!");
+                STRAPLOG("[SB Injection] launched namecache node pointer replaced with fake vnode!");
                 return true;
             }
             vp_namecache = kread64(vp_namecache + off_namecache_nc_child_tqe_prev);
         }
-        SYSLOG("[SB Injection] ERR: unable to patch launchd!");
+        STRAPLOG("[SB Injection] ERR: unable to patch launchd!");
         goto failure;
 }
 
@@ -423,39 +423,39 @@ resignL2:;
         
 xpc:; // xpc method *should* work on ios 15 & 16, we can use this for now-
         
-    SYSLOG("[SB Injection] executing xpcproxy patch");
+    STRAPLOG("[SB Injection] executing xpcproxy patch");
         
     fd = open(xpc_origlocation, O_RDONLY);
     if(fd == -1) {
         SYSLOG("ERR: Unable to open xpcproxy");
         goto failure;
     }
-    SYSLOG("fd returned: %d", fd);
+    STRAPLOG("fd returned: %d", fd);
         
     size_t xpcfile_size = lseek(fd, 0, SEEK_END);
-    SYSLOG("xpcfile_size: %llx", xpcfile_size);
+    STRAPLOG("xpcfile_size: %llx", xpcfile_size);
     if(xpcfile_size <= 0 ) { goto failure; }
         
     /* Ensure fake xpcproxy exists before continuing */
     if(![FM fileExistsAtPath:@(xpc_new_location)]) {
-        SYSLOG("ERR: Fake xpcproxy is not in the right location");
+        STRAPLOG("ERR: Fake xpcproxy is not in the right location");
         goto failure;
     }
     fd2 = open(xpc_new_location, O_RDONLY);
     if(fd2 == -1) {
-        SYSLOG("ERR: Unable to open fake xpcproxy");
+        STRAPLOG("ERR: Unable to open fake xpcproxy");
         goto failure;
     }
-    SYSLOG("fd2 returned: %d", fd2);
+    STRAPLOG("fd2 returned: %d", fd2);
     size_t xpcfake_size = lseek(fd2, 0, SEEK_END);
-    SYSLOG("xpcfile_size: %llx", xpcfile_size);
+    STRAPLOG("xpcfile_size: %llx", xpcfile_size);
     if(xpcfake_size <= 0 ) { goto failure; }
 
     selfproc = essential.info.kernel.current_proc;
     if(!ADDRISVALID(selfproc)) {
         selfproc = getProc(getpid());
         if(!ADDRISVALID(selfproc)) {
-            SYSLOG("[SB Injection] ERR: unable to get self proc");
+            STRAPLOG("[SB Injection] ERR: unable to get self proc");
             goto failure;
         }
     }
@@ -476,12 +476,12 @@ xpc:; // xpc method *should* work on ios 15 & 16, we can use this for now-
     u64 sbin_vnode = unsign_kptr(kread64(textvp + off_vnode_v_parent));
     u64 root_vnode = unsign_kptr(kread64(sbin_vnode + off_vnode_v_parent));
     if(!ADDRISVALID(root_vnode)) {
-        SYSLOG("[SB Injection] ERR: unable to get rootvnode");
+        STRAPLOG("[SB Injection] ERR: unable to get rootvnode");
         goto failure;
     }
     
     kreadbuf(root_vnode, &rootvnode, sizeof(rootvnode));
-    SYSLOG("[SB Injection] got rootvnode at: %llx", root_vnode);
+    STRAPLOG("[SB Injection] got rootvnode at: %llx", root_vnode);
     
     u64 rootmount = (u64)rootvnode.v_mount;
     if(!ADDRISVALID(rootmount)) {
@@ -505,26 +505,26 @@ xpc:; // xpc method *should* work on ios 15 & 16, we can use this for now-
     // map xpc & fakexpc then replace
     char* xpcmap = mmap(NULL, xpcfile_size, PROT_READ, MAP_PRIVATE, fd, 0);
     if(xpcmap == MAP_FAILED) {
-        SYSLOG("[SB Injection] ERR: unable to map xpcproxy");
+        STRAPLOG("[SB Injection] ERR: unable to map xpcproxy");
         goto failure;
     }
     
     char* fakexpcmap = mmap(NULL, xpcfake_size, PROT_READ | PROT_WRITE, MAP_SHARED, fd2, 0);
     if(fakexpcmap == MAP_FAILED) {
-        SYSLOG("[SB Injection] ERR: unable to map fake xpcproxy");
+        STRAPLOG("[SB Injection] ERR: unable to map fake xpcproxy");
         goto failure;
     }
     
-    SYSLOG("[SB Injection] xpcproxy & fake xpcproxy mapped");
+    STRAPLOG("[SB Injection] xpcproxy & fake xpcproxy mapped");
     
     memcpy(fakexpcmap, xpcmap, xpcfile_size);
     kr = msync(fakexpcmap, xpcfake_size, MS_SYNC);
     if(kr != KERN_SUCCESS) {
-        SYSLOG("[SB Injection] ERR: syncing over the data to fake xpc failed");
+        STRAPLOG("[SB Injection] ERR: syncing over the data to fake xpc failed");
         goto failure;
     }
     
-    SYSLOG("[SB Injection] msync returned: %d", (int)kr);
+    STRAPLOG("[SB Injection] msync returned: %d", (int)kr);
     
     // unmap and revert changes of fglob & rootvnode + close fd, fd2
     munmap(xpcmap, xpcfile_size);
@@ -536,7 +536,7 @@ xpc:; // xpc method *should* work on ios 15 & 16, we can use this for now-
     close(fd);
     close(fd2);
     
-    SYSLOG("[SB Injection] xpcproxy has been patched!");
+    STRAPLOG("[SB Injection] xpcproxy has been patched!");
     return true;
 /*
 resignX:;

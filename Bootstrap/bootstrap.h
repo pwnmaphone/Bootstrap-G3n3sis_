@@ -5,6 +5,8 @@
 
 #import <Foundation/Foundation.h>
 
+static BOOL runSBINJECTOR;
+
 void rebuildSignature(NSString *directoryPath);
 
 int bootstrap();

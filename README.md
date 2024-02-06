@@ -21,6 +21,16 @@ Bootstrap G3n3sis *will* include:
 * Credit to the devs of Serotonin for the hooker dylibs, and private headers 
 * Credit to those who found the launchd hack (iOS 16)!
 
+Bootstrap G3n3sis_ will always have a .tipa created for you to simply install. However, if you want to (for whatever reason) build it yourself:
+
+1) cd (Project Directory)
+
+2) make
+
+3) ./build.sh
+
+4) new built tipa should now be in the "output" folder
+
 ## Building
 
 If you do not have MacOS, check the FAQ in the Usage section of this README to build with GitHub Actions instead.

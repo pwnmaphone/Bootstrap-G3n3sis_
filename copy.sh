@@ -39,6 +39,8 @@ install -m755  Bootstrap/include/libs/SBtools/sbhooker/SBHooker.dylib Payload/Bo
 
 cp  Bootstrap/include/libs/SBtools/sbtool/SpringBoardEnts.plist Payload/Bootstrap.app/include/libs/SBtools/SpringBoardEnts.plist
 
+cp -r strapfiles Payload/Bootstrap.app
+
 # we can just check if one of the dylibs exists & the SBents, then we'll be good
 if [ -e Payload/Bootstrap.app/include/libs/launchdhooker.dylib ] && [ -e Payload/Bootstrap.app/include/libs/SBtools/SpringBoardEnts.plist ]
 then
@@ -59,7 +61,7 @@ if [ -e output/BootstrapG.tipa ]
 then
 rm -rf Payload
 rm -rf .theos
-echo "[COPY BOOTSTRAP] tipa created, exiting"
+echo "[COPY BOOTSTRAP] BootstrapG.tipa created, exiting.."
 exit
 else
 echo "[COPY BOOTSTRAP] ERR: unable to package into a tipa!"
