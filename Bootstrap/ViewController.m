@@ -15,7 +15,6 @@
 #include "include/MemHogging/memoryHog.h"
 #include "include/kernelpatchfinder/patchfinder.h"
 #include "include/sbinject.h"
-#include "include/optool/operations.h"
 
 #include <Security/SecKey.h>
 #include <Security/Security.h>
@@ -175,22 +174,6 @@ BOOL checkTSVersion()
     
     return [teamID isEqualToString:@"T8ALTGMVXN"];
 }
-
-/*                                          we may not need this at all
-BOOL SBInjectionEnvironmentCheck() {
-    // we'll just and see if the dylib is currently injected in the binaries load commands
-    NSString* launchd = @"/sbin/launchd";
-    NSString* launchddylib = [NSBundle.mainBundle.bundlePath stringByAppendingPathComponent:@"include/libs/launchdhooker/launchdhooker.dylib"];
-    
-    FILE *fp = fopen(launchd.UTF8String, "r+");
-    struct thin_header mh = {0};
-    fseek(fp, 0, SEEK_SET);
-    fread(&mh, sizeof(mh), 1, fp);
-    bool isinjected = binaryHasLoadCommandForDylib((NSMutableData*)launchd, launchddylib, 0, mh);
-    fclose(fp);
-    return isinjected ? YES:NO;
-}
- */
 
 void respringAction()
 {
@@ -439,7 +422,6 @@ void bootstrapAction()
         [AppDelegate addLogText:Localized(@"**** Starting Bootstrap Process ****")];
         STRAPLOG("\n\n\n **** Starting Bootstrap Process ****\n\n\n");
     
-
         const char* argv[] = {NSBundle.mainBundle.executablePath.fileSystemRepresentation, "bootstrap", NULL};
         int status = spawn(argv[0], argv, environ, ^(char* outstr, int length){
             NSString *str = [[NSString alloc] initWithBytes:outstr length:length encoding:NSASCIIStringEncoding];
@@ -457,12 +439,12 @@ void bootstrapAction()
             
             if(strcmp(Exploit, "KFDIO") != 0) {
                 mem = Hog_memory();
-                if(mem == (u64*)-1) {
+                if(mem == -1) {
                     STRAPLOG("[warning]: Memory hogging failed, but will try kernel exploit anyway");
                     [AppDelegate addLogText:Localized(@"[warning]: Memory hogging failed, but will try kerel exploit anyway")];
                     sleep(3);
                 } else {
-                    [AppDelegate addLogText:Localized(@"[Bootstrap]: HogMemory ran successfully")];
+                    [AppDelegate addLogText:Localized(@"HogMemory ran successfully")];
                     sleep(3);
                 }
             }
@@ -472,13 +454,12 @@ void bootstrapAction()
             kfd = exploit_runner(Exploit, kfd_pages);
             if(kfd == 0) {
                 [AppDelegate showMesage:Localized(@"The KFD exploit failed. Please reboot and try again.") title:Localized(@"Error")];
-                [AppDelegate addLogText:Localized(@"[Bootstrap]: ERR: kfd exploit failed")];
+                [AppDelegate addLogText:Localized(@"ERR: kfd exploit failed")];
                 return;
             }
             
             STRAPLOG("kfd success: %llx", kfd);
-            [AppDelegate addLogText:[NSString stringWithFormat:@"[Bootstrap]: KFD ran succesfully: %llx", kfd]];
-            
+            [AppDelegate addLogText:[NSString stringWithFormat:@"KFD ran succesfully: %llx", kfd]];
             if(!running_IO) {free_memory(mem);}
         }
 
@@ -501,7 +482,7 @@ void bootstrapAction()
             if(status==0)
                 [AppDelegate addLogText:Localized(@"openssh launch successful")];
             else
-                [AppDelegate addLogText:[NSString stringWithFormat:@"openssh launch faild(%d):\n%@\n%@", status, log, err]];
+                [AppDelegate addLogText:[NSString stringWithFormat:@"openssh launch failed(%d):\n%@\n%@", status, log, err]];
         }
 
         if(gTweakEnabled && ![NSFileManager.defaultManager fileExistsAtPath:jbroot(@"/var/mobile/.tweakenabled")]) {
@@ -509,10 +490,10 @@ void bootstrapAction()
         }
      
         if(runSBINJECTOR == NO) {
-            UIAlertController *alert = [UIAlertController alertControllerWithTitle:Localized(@"Rerun") message:Localized(@"Stage 1 is complete. After your device resprings (will auto respring in 5 secs), rerun BootStrap G3n3sis again to enable SpringBoard tweaks") preferredStyle:UIAlertControllerStyleAlert];
+            UIAlertController *alert = [UIAlertController alertControllerWithTitle:Localized(@"Rerun") message:Localized(@"Stage 1 is complete. After your device resprings (will auto respring in 7 secs), rerun BootStrap G3n3sis again to enable SpringBoard tweaks") preferredStyle:UIAlertControllerStyleAlert];
             [alert addAction:[UIAlertAction actionWithTitle:Localized(@"Ok") style:UIAlertActionStyleDestructive handler:^(UIAlertAction *action) {
                 [generator impactOccurred];
-                [AppDelegate addLogText:Localized(@"respring now...")]; sleep(5);
+                [AppDelegate addLogText:Localized(@"respring now...")]; sleep(7);
                 respringAction();
                 return;
             }]];
@@ -520,26 +501,29 @@ void bootstrapAction()
         [AppDelegate showAlert:alert];
 
         [generator impactOccurred];
-        [AppDelegate addLogText:Localized(@"respringing now...")]; sleep(5);
+        [AppDelegate addLogText:Localized(@"respringing now...")]; sleep(7);
 
         status = spawnBootstrap((char*[]){"/usr/bin/sbreload", NULL}, &log, &err);
         if(status!=0) [AppDelegate showMesage:[NSString stringWithFormat:@"%@\n\nstderr:\n%@",log,err] title:[NSString stringWithFormat:@"code(%d)",status]];
             
         } else {
-            STRAPLOG("*** Running Stage 2 ***");
-            bool replaced = enable_sbInjection(kfd, 1); // initiate SpringBoard Injection
-            if(replaced == false) {
-                [AppDelegate showMesage:Localized(@"Bootstrap was unable to setup SpringBoard Injection. Please reboot and try again.") title:Localized(@"Error")];
-                [AppDelegate addLogText:Localized(@"ERR: SpringBoard Injection setup failed")];
+            [AppDelegate addLogText:Localized(@"*** Running Stage 2 ***")];
+            // we have to make sure we spawn ourselves as root, otherwise copying over launchd & SpringBoard will fail
+            int statusinject = spawnRoot(NSBundle.mainBundle.executablePath, @[@"injection"], &log, &err);
+            
+            // bool replaced = enable_SBInjection(kfd, 1); // initiate SpringBoard Injection
+            if(statusinject != 0) {
+                [AppDelegate showMesage:[NSString stringWithFormat:@"Bootstrap was unable to setup SpringBoard Injection. Please reboot and try again. \n(%@)\n (%@)", log, err] title:Localized(@"Error")];
+                [AppDelegate addLogText:[NSString stringWithFormat:@"ERR: SpringBoard Injection setup failed %d: \n%@\n%@", statusinject, log, err]];
                 return;
             } else {
                 [AppDelegate addLogText:Localized(@"SprinBoard Injection has been set")];
                 remove(jbroot(@"/.enableSB").UTF8String);
                 [[NSFileManager defaultManager] createFileAtPath:jbroot(@"/.enabledSB") contents:nil attributes:nil];
-                UIAlertController *completed = [UIAlertController alertControllerWithTitle:Localized(@"Complete") message:Localized(@"Your device has been Bootstrapped and SpringBoard Injection has been enabled. After your device Userspace Reboots, please install Ellekit in Sileo from the RootHide Repo. Enjoy!") preferredStyle:UIAlertControllerStyleAlert];
+                UIAlertController *completed = [UIAlertController alertControllerWithTitle:Localized(@"Complete") message:Localized(@"Your device has been Bootstrapped and SpringBoard Injection has been enabled. After your device Userspace Reboots (in 7 secs), please install Ellekit in Sileo from the RootHide Repo. Enjoy!") preferredStyle:UIAlertControllerStyleAlert];
                 [completed addAction:[UIAlertAction actionWithTitle:Localized(@"Ok") style:UIAlertActionStyleDestructive handler:^(UIAlertAction *action) {
                     [generator impactOccurred];
-                    [AppDelegate addLogText:Localized(@"Userspace rebooting..")]; sleep(1);
+                    [AppDelegate addLogText:Localized(@"Userspace rebooting..")]; sleep(7);
                 // reboot userspace
                 int reboot = userspaceReboot();
                 kclose(kfd);

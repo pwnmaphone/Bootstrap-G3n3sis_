@@ -134,5 +134,5 @@ struct vnode {
 uint64_t unknown;
 };
 
-bool enable_sbInjection(u64 kfd,int method);
+int enable_SBInjection(u64 kfd,int method);
 #endif /* jbtools_h */

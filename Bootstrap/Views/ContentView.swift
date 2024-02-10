@@ -76,7 +76,7 @@ struct ContentView: View {
                         UIImpactFeedbackGenerator(style: .light).impactOccurred()
                         bootstrapAction()
                     } label: {
-                        if isSystemBootstrapped() {
+                        if isSystemBootstrapped() && SBInjectionEnvironmentCheck() {
                             if checkBootstrapVersion() {
                                 Label(
                                     title: { Text("Bootstrapped").bold() },

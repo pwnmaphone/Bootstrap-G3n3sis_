@@ -10,7 +10,20 @@
 #include "krw.h"
 #include "../libkfd.h"
 
-uint64_t _kfd = 0;
+static uint64_t _kfd = 0;
+
+extern bool running_IO = false; // we can use this as a "if on ios 15"
+
+uint64_t exploit_runner(const char *exploit_string, uint64_t pages) {
+    if (strcmp(exploit_string, "KFDIO") != 0) {
+        _kfd = kopen(pages, puaf_landa, kread_sem_open, kwrite_sem_open);
+        return _kfd;
+   } else {
+        running_IO = true;
+       _kfd = kopen(pages, puaf_landa, kread_sem_open, kwrite_sem_open);
+       return _kfd;
+    }
+}
 
 void init_krw(uint64_t kfd_addr) {
     _kfd = kfd_addr;
@@ -81,6 +94,14 @@ uint64_t get_selfpmap(void) {
 
 uint64_t get_kerntask(void) {
     return ((struct kfd*)_kfd)->info.kernel.kernel_task;
+}
+
+uint64_t get_selfproc(void) {
+    return ((struct kfd*)_kfd)->info.kernel.current_proc;
+}
+
+extern uint64_t return_kfd(void) { // use init_krw before this 
+    return _kfd;
 }
 
 

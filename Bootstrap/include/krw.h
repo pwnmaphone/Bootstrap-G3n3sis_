@@ -8,6 +8,8 @@
 #ifndef krw_h
 #define krw_h
 
+uint64_t exploit_runner(const char *exploit_string, uint64_t pages);
+
 void early_kread(uint64_t kfd, uint64_t kaddr, void* uaddr, uint64_t size);
 
 uint64_t early_kread64(uint64_t kfd, uint64_t where);
@@ -22,9 +24,13 @@ uint64_t get_kernproc(void);
 
 uint64_t get_selftask(void);
 
+uint64_t get_selfproc(void);
+
 uint64_t get_selfpmap(void);
 
 uint64_t get_kerntask(void);
+
+extern uint64_t return_kfd(void);
 
 void init_krw(uint64_t kfd_addr);
 

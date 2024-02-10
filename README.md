@@ -21,45 +21,27 @@ Bootstrap G3n3sis *will* include:
 * Credit to the devs of Serotonin for the hooker dylibs, and private headers 
 * Credit to those who found the launchd hack (iOS 16)!
 
-Bootstrap G3n3sis_ will always have a .tipa created for you to simply install. However, if you want to (for whatever reason) build it yourself:
-
-1) `cd (Project Directory)`
-
-2) `make`
-
-3) `./build.sh`
-
-4) new built tipa should now be in the "output" folder
-
 ## Building
 
-If you do not have MacOS, check the FAQ in the Usage section of this README to build with GitHub Actions instead.
+~ Bootstrap G3n3sis_ will always have a .tipa created for you to simply install located in the Releases Tab, or in the "output" folder. However, if you want to (for whatever reason) build it yourself:
 
 You'll need MacOS to build, as you require Xcode. Simply having Xcode Command Line Tools is *insufficient*.
 
-You will need Homebrew installed. If you don't have Homebrew installed, run the following command in your terminal:
+(NOTE: Skip step 1 & 2 if you already have HomeBrew & Theos installed)
 
-`/bin/bash -c "$(curl -fsSL https://raw.githubusercontent.com/Homebrew/install/HEAD/install.sh)"`
+1) `/bin/bash -c "$(curl -fsSL https://raw.githubusercontent.com/Homebrew/install/HEAD/install.sh)"`
 
- 1. Update/Install Theos with roothide support
+2) `bash -c "$(curl -fsSL https://raw.githubusercontent.com/roothide/theos/master/bin/install-theos)"`
     
-    `bash -c "$(curl -fsSL https://raw.githubusercontent.com/roothide/theos/master/bin/install-theos)"`
-    
-    This build of Theos is consistently updated.
+(This build of Theos is consistently updated.)
 
- 2. Install make
+3) `cd (Project Directory)`
 
-    `brew install make`
+4) `make`
 
- 3. Clone the GitHub repository and enter directory
+5) `./build.sh`
 
-    `git clone https://github.com/roothide/Bootstrap/ && cd Bootstrap`
-
- 5. Build `Bootstrap.tipa`
-
-    `gmake -j$(sysctl -n hw.ncpu) package`
-
- 6. Transfer `Bootstrap.tipa` from `./packages/` to your device and install it with TrollStore!
+6) new built tipa should now be in the "output" folder
 
 ## Usage
 
@@ -109,7 +91,6 @@ Huge thanks to these people, we couldn't have completed this project without the
 - EquationGroups: [https://twitter.com/equationgroups](https://twitter.com/equationgroups)
 - Évelyne: [http://github.com/evelyneee](http://github.com/evelyneee)
 - GeoSnOw: [https://twitter.com/fce365](https://twitter.com/fce365)
-- G3n3sis: [https://twitter.com/G3nNuk_e](https://twitter.com/G3nNuk_e)
 - hayden: [https://procursus.social/@hayden](https://procursus.social/@hayden)
 - Huy Nguyen: [https://twitter.com/little_34306](https://twitter.com/little_34306)
 - iAdam1n: [https://twitter.com/iAdam1n](https://twitter.com/iAdam1n)

@@ -19,4 +19,5 @@ bool isSystemBootstrapped();
 
 bool checkBootstrapVersion();
 
+bool SBInjectionEnvironmentCheck();
 #endif /* bootstrap_h */

@@ -18,8 +18,6 @@ extern const char** environ;
 #define SYSTEM_VERSION_LESS_THAN(v)                 ([[[UIDevice currentDevice] systemVersion] compare:v options:NSNumericSearch] == NSOrderedAscending)
 #define SYSTEM_VERSION_LESS_THAN_OR_EQUAL_TO(v)     ([[[UIDevice currentDevice] systemVersion] compare:v options:NSNumericSearch] != NSOrderedDescending)
 
-uint64_t exploit_runner(const char *exploit_string, uint64_t pages);
-
 uint64_t jbrand();
 
 uint64_t jbrand_new();

@@ -7,12 +7,13 @@
 #include "bootstrap.h"
 #include "NSUserDefaults+appDefaults.h"
 #include "AppList.h"
+#include "include/optool/operations.h"
 
 extern int decompress_tar_zstd(const char* src_file_path, const char* dst_file_path);
 
 BOOL StepIncrement() {
     kern_return_t k = [[NSFileManager defaultManager] createFileAtPath:jbroot(@"/.enableSB") contents:nil attributes:nil];
-    if(k != KERN_SUCCESS && ![[NSFileManager defaultManager] fileExistsAtPath:jbroot(@"/.enableSB")]) {
+    if(![[NSFileManager defaultManager] fileExistsAtPath:jbroot(@"/.enableSB")]) {
         SYSLOG("Unable to increment next step!");
         return NO;
     }
@@ -497,4 +498,23 @@ bool checkBootstrapVersion()
     if(!bootversion) return false;
     
     return [bootversion isEqualToString:NSBundle.mainBundle.infoDictionary[@"CFBundleShortVersionString"]];
+}
+
+bool SBInjectionEnvironmentCheck() {
+    // we'll just and see if the dylib is currently injected in the binaries load commands
+    NSFileManager* fm = [NSFileManager defaultManager];
+    NSString* launchd = jbroot(@"/var/mobile/BSTRPFiles/launchd");
+    NSString* launchddylib = [NSBundle.mainBundle.bundlePath stringByAppendingPathComponent:@"include/libs/launchdhooker/launchdhooker.dylib"];
+    
+    if(![fm fileExistsAtPath:launchd]) return false;
+    
+    FILE *fp = fopen(launchd.UTF8String, "r+");
+    struct thin_header mh = {0};
+    fseek(fp, 0, SEEK_SET);
+    fread(&mh, sizeof(mh), 1, fp);
+    NSMutableData* data_binary = [[launchd dataUsingEncoding:NSUTF8StringEncoding] mutableCopy];
+    uint32_t lastOffset = 0;
+    bool isinjected = binaryHasLoadCommandForDylib(data_binary, launchddylib, &lastOffset, mh);
+    fclose(fp);
+    return isinjected ? true:false;
 }

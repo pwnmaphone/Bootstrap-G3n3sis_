@@ -2,6 +2,7 @@
 #import "AppDelegate.h"
 #include "NSUserDefaults+appDefaults.h"
 #include "common.h"
+#include "include/sbinject.h"
 
 int main(int argc, char * argv[]) {
 
@@ -38,6 +39,12 @@ int main(int argc, char * argv[]) {
                 [NSUserDefaults.appDefaults synchronize];
                 SYSLOG("locale=%@", [NSUserDefaults.appDefaults valueForKey:@"locale"]);
                 exit(0);
+            } else if (strcmp(argv[1], "injection")==0) {
+                SYSLOG("Starting springboard injection process");
+                u64 kayeffdee = return_kfd();
+                ASSERT(kayeffdee != 0);
+                ASSERT(getuid() == 0);
+                exit(enable_SBInjection(kayeffdee, 1));
             }
             
             SYSLOG("unknown cmd: %s", argv[1]);

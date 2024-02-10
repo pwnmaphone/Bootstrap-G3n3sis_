@@ -16,3 +16,4 @@ void bootstrapAction();
 void unbootstrapAction();
 BOOL updateOpensshStatus(BOOL notify);
 void fixNotification();
+BOOL SBInjectionEnvironmentCheck();
